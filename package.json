@@ -4,24 +4,38 @@
   "description": "",
   "license": "ISC",
   "author": "",
+  "main": "index.ts",
   "type": "module",
-  "main": "index.js",
   "scripts": {
     "tsc": "tsc",
-    "dev": "concurrently \"tsc --watch\" \"node --watch --experimental-transform-types ./src/index.ts\"",
-    "start": "node --experimental-transform-types ./src/index.ts",
-    "lint": "eslint ."
+    "test": "NODE_ENV=test node --test",
+    "dev": "NODE_ENV=development concurrently \"tsc --watch\" \"node --watch --experimental-transform-types index.ts\"",
+    "start": "NODE_ENV=production node --experimental-transform-types index.ts",
+    "db:seed": "ts-node ./utils/seed.ts",
+    "lint": "eslint .",
+    "prettier": "npx prettier . --write"
   },
   "devDependencies": {
+    "@babel/preset-typescript": "^7.28.5",
     "@eslint/js": "^10.0.1",
     "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
     "concurrently": "^9.2.1",
+    "dotenv": "^17.4.2",
     "eslint": "^10.2.1",
+    "jest": "^30.3.0",
+    "prettier": "3.8.1",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.6",
+    "ts-node-dev": "^2.0.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.58.2"
   },
   "dependencies": {
-    "express": "^5.2.1"
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "mongoose": "^9.4.1"
   }
 }

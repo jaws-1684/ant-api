@@ -30,4 +30,5 @@ export default tseslint.config({
       { argsIgnorePattern: '^_' },
     ],
   },
+   ignores: ["dist/*"]
 });
