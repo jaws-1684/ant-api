@@ -15,7 +15,7 @@ export const messageSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId, ref: 'Chat',
         required: true
     },
-   
+    isEdited: { type: Boolean },
 }, { timestamps: true});
 
 messageSchema.set('toJSON', {
