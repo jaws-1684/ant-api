@@ -46,11 +46,13 @@ const updateMessage = async (
 ) => {
     try {
     const currentUserId = getCurrentUserId(request);
+    const messageId = parseId(request.params.id);
     const messagePayload = parseUpdateMessage(request.body)
    
     const message = {
       ...messagePayload,
       user: currentUserId,
+      id: messageId
     };
     const updatedMessage = await messageService.updateMessage(message);
     response.status(200).send(updatedMessage);
