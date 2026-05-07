@@ -36,7 +36,7 @@ describe("Message service", () => {
         })
         expect(message.content).toEqual(content);
     });
-    it("#deleteMessage should delete a message", async () => {
+    it("#deleteMessage should set the softDeleted flag and change the contetn to 'This message was deleted'", async () => {
         const content = "New message";
         const message = await messageService.addMessage({
             ...testEntry,
@@ -45,7 +45,8 @@ describe("Message service", () => {
         const id = message.id
         const userId = testEntry.user
         await messageService.deleteMessage({ id, userId });
-        expect(await messageService.findMessage({ id, userId }) ).toBe(null);
+        const deletedMessage = await messageService.findMessage({ id, userId })
+        expect(deletedMessage?.softDeleted ).toBe(true);
     });
     it("#updateMessage should update a message", async () => {
         const content = "New message";
