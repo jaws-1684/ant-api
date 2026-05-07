@@ -16,6 +16,7 @@ export const messageSchema = new mongoose.Schema({
         required: true
     },
     isEdited: { type: Boolean },
+    softDeleted: { type: Boolean }
 }, { timestamps: true});
 
 messageSchema.set('toJSON', {
