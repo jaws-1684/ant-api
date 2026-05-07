@@ -72,11 +72,11 @@ describe("Message service", () => {
             }))
             newMessages = await messageService.insertMessages(newMessages)
         });
-        it("#getMessages should return all chat messages for current user", async () => {
+        it("should return all chat messages for current user", async () => {
             const messages = await messageService.getMessages({ userId: testEntry.user, chatId: testEntry.chat})
             expect(messages.length).toEqual(newMessages.length);
         });
-        it("#getMessages should return all chat messages for the other user", async () => {
+        it("should return all chat messages for the other user", async () => {
             const messages = await messageService.getMessages({ userId: testEntry.friend, chatId: testEntry.chat})
             expect(messages.length).toEqual(newMessages.length);
         });
