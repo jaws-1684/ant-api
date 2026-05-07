@@ -1,5 +1,5 @@
 import type { NewMessage, MessageDTO, UpdateMessage } from "../types/index.ts";
-import Message from "../models/message.ts";
+import Message from "../models/messageModel.ts";
 import Chat from "../models/chat.ts";
 
 
@@ -17,7 +17,7 @@ const updateMessage = async (updateMessage: UpdateMessage): Promise<MessageDTO> 
     return await message.save()
 };
 const deleteMessage = async ({ id, userId }: { id: string, userId: string }) => {
-    await Message.deleteOne({ _id: id, user: userId }).orFail();
+    return await Message.findOneAndDelete({ _id: id, user: userId }).orFail();
 }
 const findMessage = async ({ id, userId }: { id: string, userId: string }) => {
     return Message.findOne({ _id: id, user: userId });
