@@ -1,11 +1,17 @@
 import type { NewMessage, MessageDTO, UpdateMessage } from "../types/index.ts";
 import Message from "../models/messageModel.ts";
-import Chat from "../models/chat.ts";
+import Chat from "../models/chatModel.ts";
 
 
 const getMessages = async ({ chatId, userId }: { chatId: string, userId: string }): Promise<MessageDTO[]> => {
     const chat = await Chat.findOne({ _id: chatId, participants: userId }).orFail();
-    return Message.find({ chat: chat._id });
+    const messages = await Message.find({ chat: chat._id });
+    return messages.map(message => {
+        if(message.softDeleted) {
+            return {...message, content: "This message was deleted" }
+        } 
+        return message
+    });
 };
 const addMessage = async (newMessage: NewMessage): Promise<MessageDTO> => {
     await Chat.findOne({ _id: newMessage.chat, participants: newMessage.user }).orFail();
@@ -17,7 +23,7 @@ const updateMessage = async (updateMessage: UpdateMessage): Promise<MessageDTO> 
     return await message.save()
 };
 const deleteMessage = async ({ id, userId }: { id: string, userId: string }) => {
-    return await Message.findOneAndDelete({ _id: id, user: userId }).orFail();
+    return await Message.findOneAndUpdate({ _id: id, user: userId }, { softDeleted: true }).orFail();
 }
 const findMessage = async ({ id, userId }: { id: string, userId: string }) => {
     return Message.findOne({ _id: id, user: userId });
