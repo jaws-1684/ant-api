@@ -19,6 +19,7 @@ const addMessage = async (newMessage: NewMessage): Promise<MessageDTO> => {
 };
 const updateMessage = async (updateMessage: UpdateMessage): Promise<MessageDTO> => {
     const message = await Message.findOne({ _id: updateMessage.id, user: updateMessage.user }).orFail();
+    message.isEdited = true;
     message.content = updateMessage.content;
     return await message.save()
 };
