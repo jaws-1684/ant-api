@@ -16,7 +16,7 @@ const createMessage = async (
    
     const message = {
       ...messagePayload,
-      user: currentUserId,
+      userId: currentUserId,
     };
     const newMessage = await messageService.addMessage(message);
     response.status(201).send(newMessage);
@@ -51,7 +51,7 @@ const updateMessage = async (
    
     const message = {
       ...messagePayload,
-      user: currentUserId,
+      userId: currentUserId,
       id: messageId
     };
     const updatedMessage = await messageService.updateMessage(message);

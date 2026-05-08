@@ -7,11 +7,11 @@ export const messageSchema = new mongoose.Schema({
         required: true,
         minlength: 1
     },
-    user: {
+    userId: {
         type: Schema.Types.ObjectId, ref: 'User',
         required: true
     },
-    chat: {
+    chatId: {
         type: Schema.Types.ObjectId, ref: 'Chat',
         required: true
     },

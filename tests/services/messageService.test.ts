@@ -6,14 +6,14 @@ import type { MessageDocument } from "../../types/index.ts";
 
 describe("Message service", () => {
    
-    let testEntry: Record<"user" | "chat" | "friend", string>;
+    let testEntry: Record<"userId" | "chatId" | "friend", string>;
 
     beforeAll(async () => {
         await db.connect();
         const { user, chat, friend } = await addTestEntry()
         testEntry = {
-            user: user.id,
-            chat: chat.id,
+            userId: user.id,
+            chatId: chat.id,
             friend: friend.id
 
         }
@@ -43,7 +43,7 @@ describe("Message service", () => {
             content
         }) as MessageDocument;
         const id = message.id
-        const userId = testEntry.user
+        const userId = testEntry.userId
         await messageService.deleteMessage({ id, userId });
         const deletedMessage = await messageService.findMessage({ id, userId })
         expect(deletedMessage?.softDeleted ).toBe(true);
@@ -55,7 +55,7 @@ describe("Message service", () => {
             content
         }) as MessageDocument;
         const id = message.id
-        const userId = testEntry.user
+        const userId = testEntry.userId
 
         const updateContent = "Updated Message";
         await messageService.updateMessage({ id, user: userId, content: updateContent });
@@ -67,18 +67,18 @@ describe("Message service", () => {
         beforeEach(async () => {
             const contents = messageEntries.slice(0, 20);
             newMessages = contents.map((content, idx) => ({
-                user: idx % 2 == 0 ? testEntry.user : testEntry.friend,
-                chat: testEntry.chat,
+                userId: idx % 2 == 0 ? testEntry.userId : testEntry.friend,
+                chatId: testEntry.chatId,
                 content
             }))
             newMessages = await messageService.insertMessages(newMessages)
         });
         it("should return all chat messages for current user", async () => {
-            const messages = await messageService.getMessages({ userId: testEntry.user, chatId: testEntry.chat})
+            const messages = await messageService.getMessages({ userId: testEntry.userId, chatId: testEntry.chatId})
             expect(messages.length).toEqual(newMessages.length);
         });
         it("should return all chat messages for the other user", async () => {
-            const messages = await messageService.getMessages({ userId: testEntry.friend, chatId: testEntry.chat})
+            const messages = await messageService.getMessages({ userId: testEntry.friend, chatId: testEntry.chatId})
             expect(messages.length).toEqual(newMessages.length);
         });
     })
