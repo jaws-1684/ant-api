@@ -1,23 +1,18 @@
 import messageService from '../services/messageService.ts';
-import type { MessageDTO, MessagePayload } from "../types/index.ts";
+import type { MessageDTO, NewMessage, UpdateMessage } from "../types/index.ts";
 import type { Response, Request, NextFunction } from 'express';
 import { getCurrentUserId } from '../controllers/auth.ts';
-import { parseId, parseMessage, parseUpdateMessage } from '../utils/parsers.ts';
+import { messageSchema, updateMessageSchema, objectIdSchema } from '../utils/schemas.ts';
 
 
 const createMessage = async (
-  request: Request<unknown, unknown, MessagePayload>, 
+  request: Request<unknown, unknown, NewMessage>, 
   response: Response<MessageDTO>, 
   next: NextFunction
 ) => {
   try {
-    const currentUserId = getCurrentUserId(request);
-    const messagePayload = parseMessage(request.body)
-   
-    const message = {
-      ...messagePayload,
-      userId: currentUserId,
-    };
+    const userId = getCurrentUserId(request);
+    const message = messageSchema.parse({...request.body, userId })
     const newMessage = await messageService.addMessage(message);
     response.status(201).send(newMessage);
   } catch(e: unknown) {
@@ -26,34 +21,27 @@ const createMessage = async (
 }
 
 const deleteMessage = async (
-  request: Request, 
+  request: Request<{ id: string }>, 
   response: Response<MessageDTO>, 
   next: NextFunction
 ) => {
   try {
-    const currentUserId = getCurrentUserId(request);
-    const messageId = parseId(request.params.id);
-    const deletedMessage = await messageService.deleteMessage({ id: messageId, userId: currentUserId });
+    const userId = getCurrentUserId(request);
+    const messageId = objectIdSchema.parse(request.params.id);
+    const deletedMessage = await messageService.deleteMessage({ id: messageId, userId });
     response.status(200).send(deletedMessage);
   } catch(e: unknown) {
     next(e);
   }
 }
 const updateMessage = async (
-  request: Request, 
+  request: Request<{ id: string }, unknown, UpdateMessage>, 
   response: Response<MessageDTO>, 
   next: NextFunction
 ) => {
     try {
-    const currentUserId = getCurrentUserId(request);
-    const messageId = parseId(request.params.id);
-    const messagePayload = parseUpdateMessage(request.body)
-   
-    const message = {
-      ...messagePayload,
-      userId: currentUserId,
-      id: messageId
-    };
+    const userId = getCurrentUserId(request);
+    const message = updateMessageSchema.parse({...request.body, id: request.params.id, userId });
     const updatedMessage = await messageService.updateMessage(message);
     response.status(200).send(updatedMessage);
   } catch(e: unknown) {
