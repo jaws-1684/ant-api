@@ -1,4 +1,5 @@
 import { Error as MongooseError } from "mongoose";
+import { WError } from "./w.ts";
 
 interface ExternalErrorConstructor {
     new (error: Error): ExternalError
@@ -11,7 +12,7 @@ export class AppError extends Error {
     }
     msg      = (): string => 'Something went wrong'
     status   = (): number => 500
-    toObject = (): { status: number; error: { message: string; details?: Record<string, string> } } => ({
+    toObject = (): { status: number; error: { message: string; details?: string } } => ({
         status: this.status(),
         error: { message: this.msg() }
     })
@@ -32,8 +33,8 @@ export class NotAcceptedError extends AppError {
 };
 
 export class ValidationError extends AppError {
-    details?: Record<string, string>
-    constructor(message?: string, details?: Record<string, string>) {
+    details?: string
+    constructor(details?: any, message?: string) {
         super()
         this.message = message ?? 'Validation failed'
         this.details = details
@@ -78,7 +79,7 @@ export class MongoValidationError extends ExternalError {
     status = () => 400
     details = () => {
         const validationError = this.error as MongooseError.ValidationError
-        return Object.fromEntries(
+        return JSON.stringify(Object.fromEntries(
             Object.entries(validationError.errors).map(([field, error]) => {
                 const message = error.message
                     .replace(/Path/, '')
@@ -86,7 +87,7 @@ export class MongoValidationError extends ExternalError {
                     .trim()
                 return [field, message]
             })
-        );
+        ));
     };
     toObject = () => {
         return {
@@ -118,16 +119,6 @@ export class MongoNotFoundError extends ExternalError {
     static handles = (e: Error) => e instanceof MongooseError.DocumentNotFoundError
     static { this.register(this) }
 }
-//should be the last mongo error
-export class MongoCatchAllError extends ExternalError {
-    constructor(error: Error) { super(error) }
-
-    msg    = () => this.message
-    status = () => 500
-    static handles = (e: Error) => e instanceof MongooseError
-    static { this.register(this) }
-}
-
 export class JwtInvalidError extends ExternalError {
     msg    = () => 'Invalid token'
     status = () => 401
@@ -142,6 +133,7 @@ export class JwtExpiredError extends ExternalError {
     static { this.register(this) }
 }
 export const toAppError = (error: Error): AppError | null => {
+    if (error instanceof WError) return new ValidationError("Validation error", error.message)
     if (error instanceof AppError) return error
     if (ExternalError.canHandle(error)) return new (ExternalError.errorFor(error))(error)
     return null
