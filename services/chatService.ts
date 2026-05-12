@@ -11,7 +11,7 @@ interface ParticipantsTuple {
 }
 
 const getChats = async (userId: string): Promise<ChatDTO[]> => {
-    const chats = await Chat.find({ participants: userId, deletedFor: { $nin: [userId] } });
+    const chats = await Chat.find({ participants: userId, deletedFor: { $nin: [userId] } }).populate("participants");
     
     const chatsWithUnread = await Promise.all(chats.map(async (chat: ChatDocument) => {
         const lastRead = chat.lastReadAt?.get(userId) ?? new Date(0);
