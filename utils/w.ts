@@ -40,8 +40,9 @@ const isEmpty = (value: object | unknown[]) => {
         ? value.length === 0 
         : Object.keys(value).length === 0
 }
-const isInteger = (v: unknown): v is Number => Number.isInteger(Number(v));
-const isNumber = (v: unknown): v is Number => !(Number.isNaN(Number(v)));
+const isInteger = (v: unknown): v is Number => isNumber(v) && Number.isInteger(v);
+const isNumber = (v: unknown): v is Number => typeof v === "number" && !Number.isNaN(v) && Number.isFinite(v)
+  
 const isObjectId = (id: unknown): id is string => isString(id) &&  OBJECT_ID_REGEX.test(id)
 // -------------------------------------------------------------------------------------
 // Exports
@@ -207,7 +208,6 @@ class WObject<
   }
 > extends WType<Output> {
   #schema: Schema
-
   constructor(schema: Schema) {
     super()
     this.#schema = schema
@@ -242,7 +242,21 @@ class WObject<
 
     return ctx
   }
+  partial() {
+    return partial<Schema>(this.#schema)
+  }
 }
+export const partial = <T>(schema: T) => {
+    const reducer = (acc: Record<string, any>, current: [string, unknown]) => {
+      const [key, val] = current  
+      acc[key] = optional(val as WType<any>)
+      return acc
+    }
+    const partialSchema = Object
+      .entries(schema as { [K in keyof T]: WType<T[K]> })
+      .reduce(reducer, {})
+    return object(partialSchema as { [K in keyof T]: WOptional<WType<T[K]>> })
+} 
 class WString extends WType<string> {
   protected validate(ctx: ParseContext) {
     if (isString(ctx.value)) return ctx
@@ -376,7 +390,7 @@ class WPassword extends WString {
 
 class WNumber extends WType<number> {
   protected validate(ctx: ParseContext) {
-    if (typeof ctx.value === "number" && Number.isFinite(ctx.value)) {
+    if (isNumber(ctx.value)) {
       return ctx
     }
     ctx.issues.push({ path: [], message: "Expected number", fatal: true })
@@ -440,7 +454,7 @@ class WInt extends WNumber {
 
     const numberCtx = newCtx as ParseContext<number>
 
-    if (isInteger(ctx.value)) return ctx
+    if  (isInteger(ctx.value)) return ctx
     numberCtx.issues.push({ path: [], message: "Expected integer" })
 
     return numberCtx
@@ -449,7 +463,7 @@ class WInt extends WNumber {
 
 class CoercedNumber extends WNumber {
   protected validate(ctx: ParseContext): ParseContext {
-    if (isNumber(ctx.value)) {
+    if (isNumber(Number(ctx.value))) {
       return { ...ctx, value: Number(ctx.value)}
     } else {
       ctx.issues.push({ path: [], message: "Can't coerce to number", fatal: true })
@@ -462,7 +476,7 @@ class CoercedNumber extends WNumber {
 }
 class CoercedInterger extends WInt {
   protected validate(ctx: ParseContext): ParseContext {
-    if (isInteger(ctx.value)) {
+    if (isInteger(Number(ctx.value))) {
       return { ...ctx, value: Number(ctx.value)}
     } else {
       ctx.issues.push({ path: [], message: "Can't coerce to integer" })
@@ -471,5 +485,6 @@ class CoercedInterger extends WInt {
   }
 }
 export const coerce = {
-  number: () => new CoercedNumber()
+  number: () => new CoercedNumber(),
+  int: () => new CoercedInterger()
 }
