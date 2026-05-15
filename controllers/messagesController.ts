@@ -1,7 +1,7 @@
 import messageService from '../services/messageService.ts';
 import type { MessageDTO, NewMessage, UpdateMessage } from "../types/index.ts";
 import type { Response, Request, NextFunction } from 'express';
-import { getCurrentUserId } from '../controllers/auth.ts';
+import { getCurrentUserId } from "../utils/auth.ts";
 import { messageSchema, updateMessageSchema, objectIdSchema } from '../utils/schemas.ts';
 
 
@@ -29,7 +29,7 @@ const deleteMessage = async (
     const userId = getCurrentUserId(request);
     const messageId = objectIdSchema.parse(request.params.id);
     const deletedMessage = await messageService.deleteMessage({ id: messageId, userId });
-    response.status(200).send(deletedMessage);
+    response.send(deletedMessage);
   } catch(e: unknown) {
     next(e);
   }
@@ -43,7 +43,7 @@ const updateMessage = async (
     const userId = getCurrentUserId(request);
     const message = updateMessageSchema.parse({...request.body, id: request.params.id, userId });
     const updatedMessage = await messageService.updateMessage(message);
-    response.status(200).send(updatedMessage);
+    response.send(updatedMessage);
   } catch(e: unknown) {
     next(e);
   }
