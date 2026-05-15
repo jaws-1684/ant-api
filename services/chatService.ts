@@ -1,6 +1,6 @@
 import Chat from "../models/chatModel.ts";
 import Message from "../models/messageModel.ts";
-import type { ChatDocument, ChatDTO, MessageDTO } from "../types/index.ts";
+import type { ChatDocument, ChatDTO, MessageDocument } from "../types/index.ts";
 
 interface ChatServiceParams {
     id: string,
@@ -27,7 +27,7 @@ const getChats = async (userId: string): Promise<ChatDTO[]> => {
     });
 };
   
-const addChat = async ({ participants }: ParticipantsTuple): Promise<ChatDTO> => {
+const addChat = async ({ participants }: ParticipantsTuple): Promise<ChatDocument> => {
     const chat = await findByParticipants({ participants });
     if (chat) return chat
     return new Chat({ participants }).save()
@@ -45,7 +45,7 @@ const markAsRead = async ({ id, userId }: ChatServiceParams) => {
 }
 const getUnreadMessages = async (
         { id, userId, lastRead }: ChatServiceParams & { lastRead: NativeDate 
-    }): Promise<[MessageDTO | null, number]> => {
+    }): Promise<[MessageDocument | null, number]> => {
     return Promise.all([
         await Message.findOne({ chatId: id }).sort({ createdAt: -1 }).limit(1),
         await Message.countDocuments({

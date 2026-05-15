@@ -1,7 +1,7 @@
-import type { NewMessage, MessageDTO, UpdateMessage } from "../types/index.ts";
+import type { NewMessage, MessageDTO, UpdateMessage, MessageDocument } from "../types/index.ts";
 import Message from "../models/messageModel.ts";
 import Chat from "../models/chatModel.ts";
-
+import { withDTO } from "../utils/dto.ts"
 interface MessageServiceParams {
     id: string
     userId: string
@@ -34,15 +34,15 @@ const getMessages = async ({ chatId, userId, page=PAGE, limit=LIMIT, offset=OFFS
         return message.toJSON()
     });
 };
-const addMessage = async (newMessage: NewMessage): Promise<MessageDTO> => {
+const addMessage = async (newMessage: NewMessage): Promise<MessageDocument> => {
     await Chat.findOne({ _id: newMessage.chatId, participants: newMessage.userId }).orFail();
-    return new Message(newMessage).save();
+    return withDTO(() => new Message(newMessage).save())
 };
-const updateMessage = async (updateMessage: UpdateMessage): Promise<MessageDTO> => {
+const updateMessage = async (updateMessage: UpdateMessage): Promise<MessageDocument> => {
     const message = await Message.findOne({ _id: updateMessage.id, userId: updateMessage.userId }).orFail();
     message.isEdited = true;
     message.content = updateMessage.content;
-    return message.save()
+    return withDTO(() => message.save())
 };
 const deleteMessage = async ({ id, userId }: MessageServiceParams) => {
     return Message.findOneAndUpdate(
