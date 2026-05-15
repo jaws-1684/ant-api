@@ -3,17 +3,35 @@ import Message from "../models/messageModel.ts";
 import Chat from "../models/chatModel.ts";
 
 interface MessageServiceParams {
-    id: string,
+    id: string
     userId: string
 }
-const getMessages = async ({ chatId, userId }: { chatId: string, userId: string }): Promise<MessageDTO[]> => {
+interface GetMessagesParams {
+    chatId: string
+    userId: string
+    limit?: number
+    offset?: number
+    page?: number | null
+}
+
+const LIMIT = 50;
+const OFFSET = 0;
+const PAGE = null;
+
+const getMessages = async ({ chatId, userId, page=PAGE, limit=LIMIT, offset=OFFSET }: GetMessagesParams): Promise<MessageDTO[]> => {
+    if (page) {
+        offset = page*limit
+    }
     const chat = await Chat.findOne({ _id: chatId, participants: userId }).orFail();
-    const messages = await Message.find({ chatId: chat._id });
+    const messages = await Message.find({ chatId: chat._id })
+        .sort({ createdAt: -1 })
+        .skip(offset)
+        .limit(limit)
     return messages.map(message => {
         if(message.softDeleted) {
-            return {...message, content: "This message was deleted" }
+            return {...message.toJSON(), content: "This message was deleted" }
         } 
-        return message
+        return message.toJSON()
     });
 };
 const addMessage = async (newMessage: NewMessage): Promise<MessageDTO> => {
