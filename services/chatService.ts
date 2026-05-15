@@ -1,6 +1,6 @@
 import Chat from "../models/chatModel.ts";
 import Message from "../models/messageModel.ts";
-import { ChatDocument, ChatDTO, MessageDTO } from "../types/index.ts";
+import type { ChatDocument, ChatDTO, MessageDTO } from "../types/index.ts";
 
 interface ChatServiceParams {
     id: string,
@@ -11,12 +11,13 @@ interface ParticipantsTuple {
 }
 
 const getChats = async (userId: string): Promise<ChatDTO[]> => {
-    const chats = await Chat.find({ participants: userId, deletedFor: { $nin: [userId] } }).populate("participants");
+    const chats = await Chat.find({ participants: userId, deletedFor: { $nin: [userId] } })
+        .populate("participants")
     
     const chatsWithUnread = await Promise.all(chats.map(async (chat: ChatDocument) => {
         const lastRead = chat.lastReadAt?.get(userId) ?? new Date(0);
         const [ lastMessage, unread ] = await getUnreadMessages({ id: chat.id, userId, lastRead })
-        return { ...chat.toObject(), id: chat.id, unread, lastMessage };
+        return { ...chat.toJSON(), id: chat.id, unread, lastMessage };
     }));
 
     return chatsWithUnread.sort((a, b) => {
@@ -29,12 +30,12 @@ const getChats = async (userId: string): Promise<ChatDTO[]> => {
 const addChat = async ({ participants }: ParticipantsTuple): Promise<ChatDTO> => {
     const chat = await findByParticipants({ participants });
     if (chat) return chat
-    return (await new Chat({ participants }).save())
+    return new Chat({ participants }).save()
 };
 const deleteChat = async ({ id, userId }: ChatServiceParams) => {
     const chat = await findOneUserChat({ id, userId });
     chat.deletedFor.push(userId);
-    await chat.save();
+    return chat.save();
 }
 const markAsRead = async ({ id, userId }: ChatServiceParams) => {
     await Chat.findOneAndUpdate(
