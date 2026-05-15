@@ -5,21 +5,22 @@ import type { Request, Response, NextFunction } from 'express';
 import authService from '../services/authService.ts';
 import { loginSchema, userSchema } from '../utils/schemas.ts';
 import { withAuth } from '../utils/auth.ts';
+import type { LoginPayload, NewUser, UserDTO } from '../types/index.ts';
 
 
-const signup = async (request: Request, response: Response, next: NextFunction) => {
+const signup = async (request: Request<unknown, unknown, NewUser>, response: Response<UserDTO>, next: NextFunction) => {
     await withAuth((() => {
         const newUser = userSchema.parse(request.body)
         return userService.addUser(newUser)
     }), response, next, 201)
 }
-const login = async (request: Request, response: Response, next: NextFunction) => {
+const login = async (request: Request<unknown, unknown, LoginPayload>, response: Response<UserDTO>, next: NextFunction) => {
     await withAuth((() => {
         const user = loginSchema.parse(request.body)
         return authService.loginUser(user)
     }), response, next)
 };
-const refresh = async (request: Request, response: Response, next: NextFunction): Promise<void | Response> => {
+const refresh = async (request: Request, response: Response<{ accessToken: string}>, next: NextFunction): Promise<void | Response> => {
     try {
         const refreshToken = request?.cookies?.refreshToken;
         if (!refreshToken) throw new UnauthorizedError();
