@@ -42,16 +42,16 @@ const updateMessage = async (updateMessage: UpdateMessage): Promise<MessageDTO> 
     const message = await Message.findOne({ _id: updateMessage.id, userId: updateMessage.userId }).orFail();
     message.isEdited = true;
     message.content = updateMessage.content;
-    return await message.save()
+    return message.save()
 };
 const deleteMessage = async ({ id, userId }: MessageServiceParams) => {
-    return await Message.findOneAndUpdate({ _id: id, userId }, { softDeleted: true }).orFail();
+    return Message.findOneAndUpdate({ _id: id, userId }, { softDeleted: true }).orFail();
 }
 const findMessage = async ({ id, userId }: MessageServiceParams) => {
     return Message.findOne({ _id: id, userId });
 }
 const insertMessages = async (messages: NewMessage[]) => {
-    return await Message.insertMany(messages);
+    return Message.insertMany(messages);
 }
 
 const dropMessages = async () => Message.deleteMany({});
