@@ -11,6 +11,7 @@ export const messageSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId, ref: 'User',
         required: true
     },
+    images: [{ type: String }],
     chatId: {
         type: Schema.Types.ObjectId, ref: 'Chat',
         required: true
