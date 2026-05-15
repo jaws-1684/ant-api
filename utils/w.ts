@@ -44,6 +44,11 @@ type OmitSchema<
 > = {
   [P in Exclude<keyof Schema, K>]: Schema[P]
 }
+type ObjectOutput<Schema> = {
+  [K in keyof Schema as Schema[K] extends WOptional<any> ? K : never]?: Schema[K] extends WType<infer O> ? O : never
+} & {
+  [K in keyof Schema as Schema[K] extends WOptional<any> ? never : K]: Schema[K] extends WType<infer O> ? O : never
+}
 export type Ok<T> = { ok: true; data: T }
 export type Err = { ok: false; error: WError }
 export type Either<S> = Ok<S> | Err
@@ -85,6 +90,9 @@ const isObjectId = (id: unknown): id is string => isString(id) &&  OBJECT_ID_REG
 // -------------------------------------------------------------------------------------
 export function optional<T extends WType<any>>(schema: T) {
   return new WOptional(schema)
+}
+export function nullable<T extends WType<any>>(schema: T) {
+  return new WNullable(schema)
 }
 export function object<T extends Record<PropertyKey, WType<any>>>(
   inner: T
@@ -195,6 +203,9 @@ export abstract class WType<T> {
 
         return this
     }
+    nullable() {
+      return nullable(this)
+    }
     refine(fn: (input: T) => boolean, message: string) {
     this.customValidators.push(ctx => {
       if (fn(ctx.value)) return true
@@ -252,12 +263,33 @@ class WOptional<T extends WType<any>> extends WType<
   }
 }
 
+class WNullable<
+  T extends WType<any>
+> extends WType<null | Infer<T>> {
+  #schema: T
+  constructor(schema: T) {
+    super()
+    this.#schema = schema
+  }
+
+  protected validate(ctx: ParseContext) {
+    if (ctx.value === null) return ctx
+
+    const res = this.#schema.safeParse(ctx.value)
+    if (isOk(res)) {
+      ctx.value = res.data
+    } else {
+      ctx.issues.push(...res.error.issues)
+    }
+
+    return ctx
+  }
+}
+
 class WObject<
   const Schema extends Record<PropertyKey, WType<any>>,
-  Output extends {
-    [K in keyof Schema]: Schema[K] extends WType<infer O> ? O : never
-  }
-> extends WType<Output> {
+  O extends ObjectOutput<Schema>
+> extends WType<O> {
   #schema: Schema
   constructor(schema: Schema) {
     super()
