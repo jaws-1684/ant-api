@@ -45,7 +45,11 @@ const updateMessage = async (updateMessage: UpdateMessage): Promise<MessageDTO> 
     return message.save()
 };
 const deleteMessage = async ({ id, userId }: MessageServiceParams) => {
-    return Message.findOneAndUpdate({ _id: id, userId }, { softDeleted: true }).orFail();
+    return Message.findOneAndUpdate(
+        { _id: id, userId }, 
+        { softDeleted: true },
+        { returnDocument: "after" }
+    ).orFail();
 }
 const findMessage = async ({ id, userId }: MessageServiceParams) => {
     return Message.findOne({ _id: id, userId });
