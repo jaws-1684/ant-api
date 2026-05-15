@@ -8,6 +8,42 @@ export type WIssue = {
   fatal?: boolean
   path: PropertyKey[]
 }
+type ExtendShape<A, B> = {
+  [K in Exclude<keyof A, keyof B>]: A[K]
+} & {
+  [K in keyof B]: B[K]
+}
+
+type MergeSchemas<Schemas extends WObject<any, any>[]> =
+  Schemas extends [infer Head, ...infer Tail]
+    ? Head extends WObject<infer S, any>
+      ? Tail extends WObject<any, any>[]
+        ? ExtendShape<S, MergeSchemas<Tail>>
+        : S
+      : never
+    : {}
+type PartialExclude<Schema> = Partial<Record<keyof Schema, false>>
+type EmptyExclude = Record<never, never>
+type PartialSchema<
+  Schema extends Record<string, WType<any>>,
+  B extends PartialExclude<Schema> = EmptyExclude
+> = {
+  [K in keyof Schema]: K extends keyof B
+    ? Schema[K]
+    : WOptional<Schema[K]>
+}
+type PickSchema<
+  Schema extends Record<string, WType<any>>,
+  K extends keyof Schema
+> = {
+  [P in K]: Schema[P]
+}
+type OmitSchema<
+  Schema extends Record<string, WType<any>>,
+  K extends keyof Schema
+> = {
+  [P in Exclude<keyof Schema, K>]: Schema[P]
+}
 export type Ok<T> = { ok: true; data: T }
 export type Err = { ok: false; error: WError }
 export type Either<S> = Ok<S> | Err
@@ -76,7 +112,19 @@ export function number() {
 export function int() {
   return new WInt()
 }
-
+export function union<
+  const Schemas extends WObject<any, any>[],
+  >(s: [...Schemas]) {
+  const unionSchema = s
+    .map(obj => obj.schema)
+    .reduce<Record<PropertyKey, WType<any>>>((acc, schema) => {
+      Object.entries(schema).forEach(([key, val]) => {
+        acc[key] = val as WType<any>
+      })
+      return acc
+    }, {})
+  return object(unionSchema as MergeSchemas<Schemas>)
+}
 
 // -------------------------------------------------------------------------------------
 // Classes
@@ -242,21 +290,52 @@ class WObject<
 
     return ctx
   }
-  partial() {
-    return partial<Schema>(this.#schema)
-  }
-}
-export const partial = <T>(schema: T) => {
-    const reducer = (acc: Record<string, any>, current: [string, unknown]) => {
-      const [key, val] = current  
-      acc[key] = optional(val as WType<any>)
+  partial<B extends PartialExclude<Schema> = EmptyExclude>(booleans?: B) {
+    const resolvedBooleans = (booleans ?? {}) as B
+    const reducer = (acc: Record<string, WType<any>>, current: [string, unknown]) => {
+      const [key, val] = current
+      const wType = val as WType<any>
+      if (key in resolvedBooleans && resolvedBooleans[key as keyof B] === false) {
+        acc[key] = wType
+      } else {
+        acc[key] = optional(wType)
+      }
       return acc
     }
+
     const partialSchema = Object
-      .entries(schema as { [K in keyof T]: WType<T[K]> })
+      .entries(this.#schema)
       .reduce(reducer, {})
-    return object(partialSchema as { [K in keyof T]: WOptional<WType<T[K]>> })
-} 
+    return object(partialSchema as PartialSchema<Schema, B>)
+  }
+  pick<K extends keyof Schema>(keys: K[]) {
+    const pickedSchema = Object
+      .entries(this.#schema)
+      .reduce<Record<string, any>>((acc, [key, val]) => {
+        if (keys.includes(key as K)) {
+          acc[key] = val
+        }
+        return acc
+      }, {})
+
+    return object(pickedSchema as PickSchema<Schema, K>)
+  }
+  omit<K extends keyof Schema>(keys: K[]) {
+    const omittedSchema = Object
+      .entries(this.#schema)
+      .reduce<Record<string, any>>((acc, [key, val]) => {
+        if (!keys.includes(key as K)) {
+          acc[key] = val
+        }
+        return acc
+      }, {})
+
+    return object(omittedSchema as OmitSchema<Schema, K>)
+  }
+  get schema () {
+    return this.#schema
+  }
+}
 class WString extends WType<string> {
   protected validate(ctx: ParseContext) {
     if (isString(ctx.value)) return ctx
@@ -334,10 +413,14 @@ class WString extends WType<string> {
   toInteger() {
     return int()
   }
-  escape() {
+  escape(mode: "soft" | "aggresive" = "soft") {
+    const AGGRESSIVE_ESCAPE_REGEX = /[^0-9A-Za-z ]/g
+    const SOFT_ESCAPE_REGEX =  /[<>&"']/g
+    const currentRegex = mode === "soft" ? SOFT_ESCAPE_REGEX : AGGRESSIVE_ESCAPE_REGEX
     this.transforms.push(input => input.replace(
-        /[^0-9A-Za-z ]/g,
-        c => "&#" + c.charCodeAt(0) + ";"))
+        currentRegex, 
+        c => "&#" + c.charCodeAt(0) + ";"
+    ))
     return this
   }
 }
@@ -463,28 +546,29 @@ class WInt extends WNumber {
 
 class CoercedNumber extends WNumber {
   protected validate(ctx: ParseContext): ParseContext {
-    if (isNumber(Number(ctx.value))) {
-      return { ...ctx, value: Number(ctx.value)}
-    } else {
-      ctx.issues.push({ path: [], message: "Can't coerce to number", fatal: true })
+    const coerced = Number(ctx.value)
+    if (isNumber(coerced)) {
+      return super.validate({ ...ctx, value: coerced }) 
     }
-    return super.validate(ctx)
+    ctx.issues.push({ path: [], message: "Can't coerce to number", fatal: true })
+    return ctx 
   }
   int() {
-    return new CoercedInterger()
+    return new CoercedInteger()
   }
 }
-class CoercedInterger extends WInt {
+
+class CoercedInteger extends WInt {
   protected validate(ctx: ParseContext): ParseContext {
-    if (isInteger(Number(ctx.value))) {
-      return { ...ctx, value: Number(ctx.value)}
-    } else {
-      ctx.issues.push({ path: [], message: "Can't coerce to integer" })
+    const coerced = Number(ctx.value)
+    if (isInteger(coerced)) {
+      return super.validate({ ...ctx, value: coerced })
     }
-    return super.validate(ctx)
+    ctx.issues.push({ path: [], message: "Can't coerce to integer", fatal: true })
+    return ctx
   }
 }
 export const coerce = {
   number: () => new CoercedNumber(),
-  int: () => new CoercedInterger()
+  int: () => new CoercedInteger()
 }
