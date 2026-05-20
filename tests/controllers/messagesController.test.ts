@@ -8,7 +8,7 @@ import userService from "../../services/userService.ts";
 
 describe("/api/messages", () => {
    
-    const { lazy, define, clear } = initLazy()
+    const { lazy, define, clear, resolve } = initLazy()
     define("user", async () => {
         const user = randomUser();
         return userService.addUser({ ...user, password: "12345678" })
@@ -47,49 +47,47 @@ describe("/api/messages", () => {
     describe("unauthenticated requests", () => {
         beforeEach(async () => clear())
         it("should reject creating a message", async () => {
+            const { messagePayload } = await resolve(["messagePayload"])
             await api
                 .post("/api/messages")
-                .send(await lazy.messagePayload)
+                .send(messagePayload)
                 .expect(401);
         });
 
         it("should reject deleting a message", async () => {
-            const id = (await lazy.message).id
+            const { message } = await resolve(["message"])
             await api
-                .delete("/api/messages/" + id)
+                .delete("/api/messages/" + message.id)
                 .expect(401);
         });
 
         it("should reject updating a message", async () => {
-            const id = (await lazy.message).id
-            const update = await lazy.messagePayload
+            const { message, messagePayload } = await resolve(["message", "messagePayload"])
             await api
-                .patch("/api/messages/" + id)
-                .send(update)
+                .patch("/api/messages/" + message.id)
+                .send(messagePayload)
                 .expect(401);
         });
     });
 
     describe("authenticated requests", () => {     
         it("should create a message", async () => {
-            const accessToken = await lazy.accessToken
-            const payload = await lazy.messagePayload
+            const { messagePayload, accessToken, chat } = await resolve(["messagePayload", "accessToken", "chat"])
             const response = await agent
                 .post("/api/messages")
                 .set("Authorization", `Bearer ${accessToken}`)
-                .send(payload)
+                .send(messagePayload)
                 .expect(201)
                 .expect("Content-Type", /application\/json/);
 
-            expect(response.body.content).toBe(payload.content);
-            expect(response.body.chatId).toBe((await lazy.chat).id);
+            expect(response.body.content).toBe(messagePayload.content);
+            expect(response.body.chatId).toBe(chat.id);
         });
 
        
 
         it("should update a message", async () => {
-            const message = await lazy.message
-            const accessToken = await lazy.accessToken
+            const { message, accessToken } = await resolve(["message", "accessToken"])
             const response = await agent
                 .patch(`/api/messages/${message.id}`)
                 .set("Authorization", `Bearer ${accessToken}`)
@@ -100,8 +98,7 @@ describe("/api/messages", () => {
         });
 
         it("should delete a message", async () => {
-            const message = await lazy.message
-            const accessToken = await lazy.accessToken
+            const { message, accessToken } = await resolve(["message", "accessToken"])
             const response = await agent
                 .delete(`/api/messages/${message.id}`)
                 .set("Authorization", `Bearer ${accessToken}`)
@@ -119,10 +116,9 @@ describe("/api/messages", () => {
 
         });
         it("should not delete a message of another user", async () => {
-            const message = await lazy.friendMessage
-            const accessToken = await lazy.accessToken
+            const { friendMessage, accessToken } = await resolve(["friendMessage", "accessToken"])
             await agent
-                .delete(`/api/messages/${message.id}`)
+                .delete(`/api/messages/${friendMessage.id}`)
                 .set("Authorization", `Bearer ${accessToken}`)
                 .expect(404);
 
