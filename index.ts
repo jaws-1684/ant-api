@@ -5,8 +5,9 @@ import db from "./utils/db.ts";
 
 app.listen(config.PORT, () => {
   logger.info(`Server running on port ${config.PORT}`);
-  process.on("SIGINT", async () => {
-    await db.disconnect();
-    process.exit();
+  process.on("SIGINT", () => {
+    db.disconnect()
+      .then(() => process.exit())
+      .catch((e: Error) => logger.error(e.message));
   });
 });
