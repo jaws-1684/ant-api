@@ -52,7 +52,7 @@ const refresh = async (
   next: NextFunction,
 ): Promise<void | Response> => {
   try {
-    const refreshToken = request?.cookies?.refreshToken;
+    const refreshToken = request?.cookies?.refreshToken as string;
     if (!refreshToken) throw new UnauthorizedError();
     const accessToken = await authService.createAccessToken(refreshToken);
     response.json({ accessToken });
@@ -65,7 +65,7 @@ const logout = (_request: Request, response: Response) => {
   response.json({ ok: true });
 };
 const deleteProfile = async (
-  request: Request,
+  request: Request<unknown, unknown, { password: string }>,
   response: Response,
   next: NextFunction,
 ) => {
@@ -105,7 +105,7 @@ const oauthCallback = async (
     if (!request.user) throw new UnauthorizedError();
     const refreshToken = await authService.createRefreshToken(request.user.id);
     response.cookie("refreshToken", refreshToken, config.cookieOptions);
-    response.redirect(config.CLIENT_URL as string);
+    response.redirect(config.CLIENT_URL);
   } catch (e) {
     next(e);
   }
