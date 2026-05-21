@@ -3,7 +3,6 @@ import type {
   NewUser,
   UserDocument,
   UpdateUser,
-  UserEntry,
 } from "../types/index.ts";
 import { hashPassword } from "../utils/auth.ts";
 
