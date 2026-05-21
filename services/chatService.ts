@@ -37,11 +37,12 @@ const deleteChat = async ({ id, userId }: ChatServiceParams) => {
     chat.deletedFor.push(userId);
     return chat.save();
 }
-const markAsRead = async ({ id, userId }: ChatServiceParams) => {
-    await Chat.findOneAndUpdate(
+const markAsRead = async ({ id, userId }: ChatServiceParams): Promise<ChatDocument> => {
+    return Chat.findOneAndUpdate(
         { _id: id, participants: userId },
-        { $set: { [`lastReadAt.${userId}`]: new Date() } }
-    );
+        { $set: { [`lastReadAt.${userId}`]: new Date() } },
+        { returnDocument: "after" }
+    ).orFail();
 }
 const getUnreadMessages = async (
         { id, userId, lastRead }: ChatServiceParams & { lastRead: NativeDate 
