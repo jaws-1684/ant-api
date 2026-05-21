@@ -1,10 +1,13 @@
 import express from 'express';
-import mongoose from 'mongoose';
-import config from './utils/config.ts';
-import logger from './utils/logger.ts';
+import db from './utils/db.ts';
 import middleware from './utils/middleware.ts';
 import cors from "cors";
-import messageRouter from "./routes/messages.ts";
+import passport from 'passport';
+import messageRouter from "./routes/messageRouter.ts";
+import authRouter from './routes/authRouter.ts';
+import chatsRouter from './routes/chatRouter.ts'
+import cookieParser from 'cookie-parser';
+import './utils/errors.ts'
 
 
 const app = express();
@@ -14,25 +17,19 @@ const options: cors.CorsOptions = {
   origin: allowedOrigins 
 };
 
+
+await db.connect();
 app.use(cors(options));
-logger.info('connecting to', config.MONGODB_URI as string)
-
-mongoose
-  .connect(config.MONGODB_URI as string, { family: 4 })
-  .then(() => {
-    logger.info('connected to MongoDB');
-  })
-  .catch((error) => {
-    if (error instanceof Error) {
-        logger.error('error connection to MongoDB:', error.message);
-    }
-  });
-
+app.use(passport.initialize());
+app.use(cookieParser());
 // app.use(express.static('dist'));
 app.use(express.json());
 app.use(middleware.requestLogger);
 
+app.use('/api/auth', authRouter);
+app.use(middleware.authMiddleware);
 app.use('/api/messages', messageRouter);
+app.use('/api/chats', chatsRouter);
 
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);
