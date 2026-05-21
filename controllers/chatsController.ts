@@ -12,8 +12,6 @@ const getMessages = async (request: Request<{ id: string }>, response: Response<
         const page = pageSchema.parse(request.query?.page);
         const userId = getCurrentUserId(request);
         const messages = await messageService.getMessages({ chatId, userId, page });
-        //move this part to update so the chat can be sent throught websocket later
-        await chatService.markAsRead({ id: chatId, userId })
         response.send(messages);
     } catch (e) {
         next(e);
@@ -24,11 +22,20 @@ const getChats = async (request: Request, response: Response<ChatDTO[]>, next: N
         const userId = getCurrentUserId(request)
         const chats = await chatService.getChats(userId);
         response.send(chats);
-    } catch (e) {
+    } catch (e: unknown) {
         next(e);
     };
 };
-
+const updateChat = async (request: Request, response: Response<ChatDTO>, next: NextFunction) => {
+    try {
+      const userId = getCurrentUserId(request);
+      const chatId = objectIdSchema.parse(request.params?.id)
+      const chat = await chatService.markAsRead({ id: chatId, userId })
+      response.send(chat)
+    } catch (e: unknown) {
+      next(e)
+    }
+}
 const createChat = async (
   request: Request<unknown, unknown, { friendId: string }>, 
   response: Response<ChatDTO>, 
@@ -63,5 +70,6 @@ export default {
     getMessages,
     getChats,
     createChat,
-    deleteChat
+    deleteChat,
+    updateChat
 };
