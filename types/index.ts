@@ -1,8 +1,8 @@
-import { type InferSchemaType, type HydratedDocument } from "mongoose";
-import { messageSchema as mongoMessageSchema } from "../models/messageModel.ts";
-import { chatSchema as mongoChatSchema } from "../models/chatModel.ts";
-import { userSchema as mongoUserSchema } from "../models/userModel.ts";
-import {
+import type { InferSchemaType, HydratedDocument, mongo } from "mongoose";
+import type { messageSchema as mongoMessageSchema } from "../models/messageModel.ts";
+import type { chatSchema as mongoChatSchema } from "../models/chatModel.ts";
+import type { userSchema as mongoUserSchema } from "../models/userModel.ts";
+import type {
   userSchema,
   updateUserSchema,
   messageSchema,
@@ -26,17 +26,18 @@ export type UpdateMessage = Infer<typeof updateMessageSchema>;
 
 export type ChatEntry = InferSchemaType<typeof mongoChatSchema>;
 export type ChatDocument = HydratedDocument<ChatEntry>;
-export type ChatDTO = ChatEntry & {
+export type ChatDTO = Omit<ChatEntry & {
   lastMessage?: MessageDTO | null;
   unread?: number;
-} & WithMongoId;
+} & WithMongoId, "participants"> & { participants: UserDTO[] | mongo.ObjectId[] };
 
 type UserSensitiveFields =
   | "password"
   | "refreshToken"
   | "authProvider"
   | "googleId"
-  | "githubId";
+  | "githubId"
+  | "deleted";
 export type UserEntry = InferSchemaType<typeof mongoUserSchema>;
 export type UserDocument = HydratedDocument<UserEntry>;
 export type UserDTO = Omit<UserEntry & { id: string }, UserSensitiveFields>;
