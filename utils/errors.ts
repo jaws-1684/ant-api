@@ -1,10 +1,11 @@
 import { Error as MongooseError } from "mongoose";
-import { WError } from "./w.ts";
+import { WError, type WIssue } from "./w.ts";
 
 interface ExternalErrorConstructor {
     new (error: Error): ExternalError
     handles: (e: Error) => boolean
 }
+type EIssues = string | string[] | WIssue[]
 export class AppError extends Error {
     constructor() { 
         super()
@@ -12,7 +13,7 @@ export class AppError extends Error {
     }
     msg      = (): string => 'Something went wrong'
     status   = (): number => 500
-    toObject = (): { status: number; error: { message: string; details?: string } } => ({
+    toObject = (): { status: number; error: { message: string; issues?: EIssues } } => ({
         status: this.status(),
         error: { message: this.msg() }
     })
@@ -32,12 +33,13 @@ export class NotAcceptedError extends AppError {
     status = () => 406
 };
 
+
 export class ValidationError extends AppError {
-    details?: string
-    constructor(details?: any, message?: string) {
+    issues?: EIssues
+    constructor(issues?: EIssues, message?: string) {
         super()
         this.message = message ?? 'Validation failed'
-        this.details = details
+        this.issues = issues
     }
     msg      = () => this.message
     status   = () => 400
@@ -45,7 +47,7 @@ export class ValidationError extends AppError {
         return {
             error: {
                 message: this.msg(),
-                details: this.details
+                issues: this.issues
             },
             status: this.status()
         }};
@@ -77,7 +79,7 @@ export class MongoValidationError extends ExternalError {
 
     msg    = () => this.message.split(':')[0] ?? 'Validation error'
     status = () => 400
-    details = () => {
+    issues = () => {
         const validationError = this.error as MongooseError.ValidationError
         return JSON.stringify(Object.fromEntries(
             Object.entries(validationError.errors).map(([field, error]) => {
@@ -93,7 +95,7 @@ export class MongoValidationError extends ExternalError {
         return {
             error: {
                 message: this.msg(),
-                details: this.details()
+                issues: this.issues()
             },
             status: this.status()
         }};
@@ -133,7 +135,7 @@ export class JwtExpiredError extends ExternalError {
     static { this.register(this) }
 }
 export const toAppError = (error: Error): AppError | null => {
-    if (error instanceof WError) return new ValidationError("Validation error", error.message)
+    if (error instanceof WError) return new ValidationError(error.issues, "Validation error")
     if (error instanceof AppError) return error
     if (ExternalError.canHandle(error)) return new (ExternalError.errorFor(error))(error)
     return null
