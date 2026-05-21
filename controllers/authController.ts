@@ -3,9 +3,9 @@ import { UnauthorizedError } from '../utils/errors.ts';
 import userService from '../services/userService.ts';
 import type { Request, Response, NextFunction } from 'express';
 import authService from '../services/authService.ts';
-import { loginSchema, userSchema } from '../utils/schemas.ts';
-import { withAuth } from '../utils/auth.ts';
-import type { LoginPayload, NewUser, UserDTO } from '../types/index.ts';
+import { loginSchema, passwordSchema, updateCredentialsSchema, userSchema } from '../utils/schemas.ts';
+import { getCurrentUserId, withAuth } from '../utils/auth.ts';
+import type { LoginPayload, NewUser, UpdateCredentialsPayload, UserDTO } from '../types/index.ts';
 
 
 const signup = async (request: Request<unknown, unknown, NewUser>, response: Response<UserDTO>, next: NextFunction) => {
@@ -25,7 +25,7 @@ const refresh = async (request: Request, response: Response<{ accessToken: strin
         const refreshToken = request?.cookies?.refreshToken;
         if (!refreshToken) throw new UnauthorizedError();
         const accessToken = await authService.createAccessToken(refreshToken)
-        return response.json({ accessToken });
+        response.json({ accessToken });
     } catch(e) {
         next(e);
     }
@@ -33,6 +33,28 @@ const refresh = async (request: Request, response: Response<{ accessToken: strin
 const logout = (_request: Request, response: Response) => {
     response.clearCookie('refreshToken')
     response.json({ ok: true })
+}
+const deleteProfile = async (request: Request, response: Response, next: NextFunction) => {
+    try {
+        const userId = getCurrentUserId(request)
+        const password = passwordSchema.parse(request.body?.password)
+        await authService.deleteProfile({ id: userId, password})
+        response.clearCookie('refreshToken')
+        response.json({ ok: true })
+    } catch (e: unknown) {
+        next(e)
+    }
+    
+}
+const updateCredentials = async (request: Request<unknown, unknown, UpdateCredentialsPayload>, response: Response<UserDTO>, next: NextFunction) => {
+   try {
+        const userId = getCurrentUserId(request)
+        const payload = updateCredentialsSchema.parse({ ...request.body, id: userId })
+        const updatedUser = await authService.updateCredentials(payload)
+        response.json(updatedUser as UserDTO)
+   } catch(e) {
+        next(e)
+   }
 }
 const oauthCallback  = async (request: Request, response: Response, next: NextFunction) => {
         try {
@@ -51,5 +73,7 @@ export default {
     login,
     refresh,
     logout,
-    oauthCallback
+    oauthCallback,
+    updateCredentials,
+    deleteProfile
 };
