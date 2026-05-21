@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import type { MessageDocument } from "../types/index.ts";
+import { messageSerializer } from "../utils/serializers.ts";
 
 export const messageSchema = new mongoose.Schema(
   {
@@ -27,13 +28,9 @@ export const messageSchema = new mongoose.Schema(
 
 messageSchema.set("toJSON", {
   transform: (
-    _document: MessageDocument,
-    returnedObject: Record<string, any>,
-  ) => {
-    returnedObject.id = returnedObject._id?.toString();
-    delete returnedObject._id;
-    delete returnedObject.__v;
-  },
+    _document,
+    returnedObject,
+  ) => messageSerializer(returnedObject as MessageDocument),
 });
 
 const Message = mongoose.model<MessageDocument>("Message", messageSchema);
