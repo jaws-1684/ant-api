@@ -5,7 +5,6 @@ import userService from "../../services/userService.ts";
 import { ChatDocument, MessageDocument, UserDocument, UserDTO } from "../../types/index.ts";
 import chatService from "../../services/chatService.ts";
 import messageService from "../../services/messageService.ts";
-import Message from "../../models/messageModel.ts";
 
 const TOTAL_CHATS = 10;
 const TOTAL_MESSAGES = 20;
@@ -112,7 +111,7 @@ describe("/api/chats", () => {
             expect(response.body).toHaveLength(chatList.length);
         });
         it("should fetch messages for a chat", async () => {
-            const { chat, accessToken, messageList, user } = await resolve([ "chat", "accessToken", "messageList", "user" ])
+            const { chat, accessToken, messageList } = await resolve([ "chat", "accessToken", "messageList" ])
     
             const result = await agent
                 .get("/api/chats/" + chat.id)
