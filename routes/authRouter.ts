@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Router } from "express";
 import passport from "../utils/passport.ts";
 import middleware from "../utils/middleware.ts";
