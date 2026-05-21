@@ -41,7 +41,7 @@ const updateMessage = async (
 ) => {
     try {
     const userId = getCurrentUserId(request);
-    const message = updateMessageSchema.parse({...request.body, id: request.params.id, userId });
+    const message = updateMessageSchema.parse({...request.body, id: request.params?.id, userId });
     const updatedMessage = await messageService.updateMessage(message);
     response.send(updatedMessage);
   } catch(e: unknown) {
