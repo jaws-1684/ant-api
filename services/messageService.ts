@@ -1,7 +1,7 @@
-import type { NewMessage, MessageDTO, UpdateMessage, MessageDocument } from "../types/index.ts";
+import type { NewMessage, MessageDTO, UpdateMessage } from "../types/index.ts";
 import Message from "../models/messageModel.ts";
 import Chat from "../models/chatModel.ts";
-import { withDTO } from "../utils/dto.ts"
+
 interface MessageServiceParams {
     id: string
     userId: string
@@ -20,13 +20,13 @@ const PAGE = null;
 
 const getMessages = async ({ chatId, userId, page=PAGE, limit=LIMIT, offset=OFFSET }: GetMessagesParams): Promise<MessageDTO[]> => {
     if (page) {
-        offset = page*limit
+        offset = (page-1)*limit
     }
-    const chat = await Chat.findOne({ _id: chatId, participants: userId }).orFail();
-    const messages = await Message.find({ chatId: chat._id })
+    await Chat.findOne({ _id: chatId, participants: userId }).orFail();
+    const messages = await Message.find({ chatId })
         .sort({ createdAt: -1 })
         .skip(offset)
-        .limit(limit)
+        .limit(limit) 
     return messages.map(message => {
         if(message.softDeleted) {
             return {...message.toJSON(), content: "This message was deleted" }
@@ -34,15 +34,15 @@ const getMessages = async ({ chatId, userId, page=PAGE, limit=LIMIT, offset=OFFS
         return message.toJSON()
     });
 };
-const addMessage = async (newMessage: NewMessage): Promise<MessageDocument> => {
+const addMessage = async (newMessage: NewMessage): Promise<MessageDTO> => {
     await Chat.findOne({ _id: newMessage.chatId, participants: newMessage.userId }).orFail();
-    return withDTO(() => new Message(newMessage).save())
+    return new Message(newMessage).save();
 };
-const updateMessage = async (updateMessage: UpdateMessage): Promise<MessageDocument> => {
+const updateMessage = async (updateMessage: UpdateMessage): Promise<MessageDTO> => {
     const message = await Message.findOne({ _id: updateMessage.id, userId: updateMessage.userId }).orFail();
     message.isEdited = true;
     message.content = updateMessage.content;
-    return withDTO(() => message.save())
+    return message.save()
 };
 const deleteMessage = async ({ id, userId }: MessageServiceParams) => {
     return Message.findOneAndUpdate(
