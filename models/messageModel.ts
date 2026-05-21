@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import type { MessageDTO, MessageDocument } from "../types/index.ts";
+import type { MessageDocument } from "../types/index.ts";
 
 export const messageSchema = new mongoose.Schema({
     content: {
@@ -21,7 +21,7 @@ export const messageSchema = new mongoose.Schema({
 }, { timestamps: true});
 
 messageSchema.set('toJSON', {
-  transform: (_document: MessageDocument, returnedObject: MessageDTO) => {
+  transform: (_document: MessageDocument, returnedObject: Record<string, any>) => {
     returnedObject.id = returnedObject._id?.toString();
     delete returnedObject._id;
     delete returnedObject.__v;
