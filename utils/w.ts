@@ -66,6 +66,7 @@ const EMAIL_REGEX =
     /^(?!\.)(?!.*\.\.)([a-z0-9_'+\-\.]*)[a-z0-9_+-]@([a-z0-9][a-z0-9\-]*\.)+[a-z]{2,}$/i
 const URL_REGEX =
     /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/i
+const IMAGE_URL_REGEX  = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|jpeg|png)$/i
 const OBJECT_ID_REGEX = /^[a-f\d]{24}$/i    
 // -------------------------------------------------------------------------------------
 // Predicates
@@ -75,6 +76,7 @@ const isString = (v: unknown): v is string => typeof v === 'string' || v instanc
 const isEmail = (v: unknown): v is string => isString(v) && EMAIL_REGEX.test(v)
 const isPassword = (v: unknown): v is string => isString(v) && v.length >= 8
 const isUrl = (v: unknown): v is string => isString(v) && URL_REGEX.test(v)
+const isImageUrl = (v: unknown): v is string => isString(v) && IMAGE_URL_REGEX.test(v)
 const isObject = (object: unknown): object is Record<any, any> => !(!object || typeof object !== 'object')
 const isEmpty = (value: object | unknown[]) => {
     return Array.isArray(value) 
@@ -562,7 +564,22 @@ class WEmail extends WString {
 }
 class WUrl extends WString {
   protected validate(ctx: ParseContext) {
-    return new StringExtension(ctx, isUrl, "Invalid url").validate()
+    const stringCtx =  new StringExtension(ctx, isUrl, "Invalid url").validate()
+    return stringCtx
+  }
+  image() {
+    this.validators.push(ctx => {
+      if (isImageUrl(ctx.value)) return true
+
+      ctx.issues.push({
+        path: [],
+        message: "It's not an image url",
+      })
+
+      return false
+    })
+
+    return this
   }
 }
 class WObjectId extends WString {
