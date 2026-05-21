@@ -8,11 +8,8 @@ import config from "../utils/config.ts";
 const router = Router();
 
 router.post("/signup", authController.signup);
-
 router.post("/login", authController.login);
-
 router.post("/refresh", authController.refresh);
-
 router.get(
   "/google",
   passport.authenticate("google", {
@@ -28,7 +25,6 @@ router.get(
   }),
   authController.oauthCallback,
 );
-
 router.get(
   "/github",
   passport.authenticate("github", { scope: ["user:email"], session: false }),
@@ -41,7 +37,6 @@ router.get(
   }),
   authController.oauthCallback,
 );
-
 router.use(middleware.authMiddleware);
 router.post("/logout", authController.logout);
 router.patch("/credentials", authController.updateCredentials);
