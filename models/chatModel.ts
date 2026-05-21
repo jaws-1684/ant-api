@@ -4,7 +4,7 @@ import { chatSerializer } from "../utils/serializers.ts";
 
 export const chatSchema = new Schema({
   participants: [{ type: Schema.Types.ObjectId, ref: "User" }],
-  deletedFor: [{ type: Schema.Types.ObjectId }],
+  deletedFor: [{ type: Schema.Types.ObjectId, ref: "User" }],
   lastReadAt: {
     type: Map,
     of: Date,

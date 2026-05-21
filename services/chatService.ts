@@ -43,9 +43,11 @@ const addChat = async ({
   return new Chat({ participants }).save();
 };
 const deleteChat = async ({ id, userId }: ChatServiceParams) => {
-  const chat = await findOneUserChat({ id, userId });
-  chat.deletedFor.push(userId);
-  return chat.save();
+  return Chat.findOneAndUpdate(
+   { _id: id, participants: userId },
+   { $push: { deletedFor: userId } },
+   { returnDocument: "after" }
+  ).orFail();
 };
 const markAsRead = async ({
   id,
@@ -55,7 +57,7 @@ const markAsRead = async ({
     { _id: id, participants: userId },
     { $set: { [`lastReadAt.${userId}`]: new Date() } },
     { returnDocument: "after" },
-  ).orFail();
+  ).orFail().populate("participants");
 };
 const getUnreadMessages = async ({
   id,
@@ -65,8 +67,8 @@ const getUnreadMessages = async ({
   [MessageDocument | null, number]
 > => {
   return Promise.all([
-    await Message.findOne({ chatId: id }).sort({ createdAt: -1 }).limit(1),
-    await Message.countDocuments({
+    Message.findOne({ chatId: id }).sort({ createdAt: -1 }).limit(1),
+    Message.countDocuments({
       chatId: id,
       userId: { $ne: userId },
       createdAt: { $gt: lastRead },

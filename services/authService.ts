@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import config from "../utils/config.ts";
 import userService from "./userService.ts";
-import { ForbiddenError, InvalidCredentialsError } from "../utils/errors.ts";
+import { ForbiddenError, type InvalidCredentialsError } from "../utils/errors.ts";
 import { generateAccessToken, generateRefreshToken } from "../utils/tokens.ts";
 import type {
   LoginPayload,
@@ -40,7 +40,6 @@ const loginUser = async (loginUser: LoginPayload): Promise<UserDocument> => {
   }
   return authorizedUser({ id: user.id, password });
 };
-
 const updateCredentials = async (
   updateUserCredentials: UpdateCredentialsPayload,
 ): Promise<UserDocument | null> => {
@@ -57,7 +56,8 @@ const deleteProfile = async (
   deleteUser: Pick<UpdateCredentialsPayload, "id" | "password">,
 ): Promise<void> => {
   const user = await authorizedUser(deleteUser);
-  ((user.deleted = true), await user.save());
+  user.deleted = true;
+  await user.save();
 };
 export default {
   createAccessToken,
