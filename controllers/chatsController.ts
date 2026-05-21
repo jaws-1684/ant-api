@@ -8,10 +8,11 @@ import chatService from "../services/chatService.ts";
 
 const getMessages = async (request: Request<{ id: string }>, response: Response<MessageDTO[]>, next: NextFunction) => {
     try {
-        const chatId = objectIdSchema.parse(request.params.id)
-        const page = pageSchema.parse(request.query.page);
+        const chatId = objectIdSchema.parse(request.params?.id)
+        const page = pageSchema.parse(request.query?.page);
         const userId = getCurrentUserId(request);
         const messages = await messageService.getMessages({ chatId, userId, page });
+        //move this part to update so the chat can be sent throught websocket later
         await chatService.markAsRead({ id: chatId, userId })
         response.send(messages);
     } catch (e) {
@@ -35,7 +36,7 @@ const createChat = async (
 ) => {
   try {
     const userId = getCurrentUserId(request);
-    const friendId = objectIdSchema.parse(request.body.friendId)
+    const friendId = objectIdSchema.parse(request.body?.friendId)
     const newChat = await chatService.addChat({ participants: [ userId, friendId ]});
     response.status(201).send(newChat);
   } catch(e: unknown) {
@@ -50,7 +51,7 @@ const deleteChat = async (
 ) => {
   try {
     const userId = getCurrentUserId(request);
-    const chatId = objectIdSchema.parse(request.params.id);
+    const chatId = objectIdSchema.parse(request.params?.id);
     const deletedChat = await chatService.deleteChat({ id: chatId, userId });
     response.send(deletedChat);
   } catch(e: unknown) {
