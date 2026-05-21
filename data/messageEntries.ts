@@ -99,5 +99,5 @@ export default [
   "Let's ship it",
   "Great job everyone!",
   "We did it!",
-  "On to the next task."
+  "On to the next task.",
 ];

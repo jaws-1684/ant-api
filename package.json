@@ -7,25 +7,35 @@
   "main": "index.ts",
   "type": "module",
   "scripts": {
-    "tsc": "tsc",
-    "test": "NODE_ENV=test node --test",
+    "build": "rm -r ./dist && tsc",
+    "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
     "dev": "NODE_ENV=development concurrently \"tsc --watch\" \"node --watch --experimental-transform-types index.ts\"",
     "start": "NODE_ENV=production node --experimental-transform-types index.ts",
-    "db:seed": "ts-node ./utils/seed.ts",
-    "lint": "eslint .",
+    "db:seed": "ts-node ./utils/seeds.ts",
+    "lint": "eslint",
     "prettier": "npx prettier . --write"
   },
   "devDependencies": {
-    "@babel/preset-typescript": "^7.28.5",
     "@eslint/js": "^10.0.1",
     "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
+    "@types/mongoose": "^5.11.96",
+    "@types/node": "^25.6.0",
+    "@types/passport": "^1.0.17",
+    "@types/passport-github2": "^1.2.9",
+    "@types/passport-google-oauth20": "^2.0.17",
+    "@types/passport-jwt": "^4.0.1",
+    "@types/supertest": "^7.2.0",
     "concurrently": "^9.2.1",
     "dotenv": "^17.4.2",
     "eslint": "^10.2.1",
+    "eslint-plugin-jest": "^29.15.2",
     "jest": "^30.3.0",
+    "mongodb-memory-server": "^11.0.1",
     "prettier": "3.8.1",
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.6",
@@ -34,8 +44,14 @@
     "typescript-eslint": "^8.58.2"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "mongoose": "^9.4.1"
+    "mongoose": "^9.4.1",
+    "passport": "^0.7.0",
+    "passport-github2": "^0.1.12",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-jwt": "^4.0.1"
   }
 }

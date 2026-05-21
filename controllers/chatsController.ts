@@ -1,75 +1,88 @@
 import type { ChatDTO, MessageDTO } from "../types/index.ts";
-import type { Response, Request, NextFunction } from 'express';
+import type { Response, Request, NextFunction } from "express";
 import { pageSchema, objectIdSchema } from "../utils/schemas.ts";
 import { getCurrentUserId } from "../utils/auth.ts";
 import messageService from "../services/messageService.ts";
 import chatService from "../services/chatService.ts";
 
-
-const getMessages = async (request: Request<{ id: string }>, response: Response<MessageDTO[]>, next: NextFunction) => {
-    try {
-        const chatId = objectIdSchema.parse(request.params?.id)
-        const page = pageSchema.parse(request.query?.page);
-        const userId = getCurrentUserId(request);
-        const messages = await messageService.getMessages({ chatId, userId, page });
-        response.send(messages);
-    } catch (e) {
-        next(e);
-    };
+const getMessages = async (
+  request: Request<{ id: string }>,
+  response: Response<MessageDTO[]>,
+  next: NextFunction,
+) => {
+  try {
+    const chatId = objectIdSchema.parse(request.params?.id);
+    const page = pageSchema.parse(request.query?.page);
+    const userId = getCurrentUserId(request);
+    const messages = await messageService.getMessages({ chatId, userId, page });
+    response.send(messages);
+  } catch (e) {
+    next(e);
+  }
 };
-const getChats = async (request: Request, response: Response<ChatDTO[]>, next: NextFunction) => {
-    try {
-        const userId = getCurrentUserId(request)
-        const chats = await chatService.getChats(userId);
-        response.send(chats);
-    } catch (e: unknown) {
-        next(e);
-    };
-};
-const updateChat = async (request: Request, response: Response<ChatDTO>, next: NextFunction) => {
-    try {
-      const userId = getCurrentUserId(request);
-      const chatId = objectIdSchema.parse(request.params?.id)
-      const chat = await chatService.markAsRead({ id: chatId, userId })
-      response.send(chat)
-    } catch (e: unknown) {
-      next(e)
-    }
-}
-const createChat = async (
-  request: Request<unknown, unknown, { friendId: string }>, 
-  response: Response<ChatDTO>, 
-  next: NextFunction
+const getChats = async (
+  request: Request,
+  response: Response<ChatDTO[]>,
+  next: NextFunction,
 ) => {
   try {
     const userId = getCurrentUserId(request);
-    const friendId = objectIdSchema.parse(request.body?.friendId)
-    const newChat = await chatService.addChat({ participants: [ userId, friendId ]});
-    response.status(201).send(newChat);
-  } catch(e: unknown) {
+    const chats = await chatService.getChats(userId);
+    response.send(chats);
+  } catch (e: unknown) {
     next(e);
   }
-}
+};
+const updateChat = async (
+  request: Request,
+  response: Response<ChatDTO>,
+  next: NextFunction,
+) => {
+  try {
+    const userId = getCurrentUserId(request);
+    const chatId = objectIdSchema.parse(request.params?.id);
+    const chat = await chatService.markAsRead({ id: chatId, userId });
+    response.send(chat);
+  } catch (e: unknown) {
+    next(e);
+  }
+};
+const createChat = async (
+  request: Request<unknown, unknown, { friendId: string }>,
+  response: Response<ChatDTO>,
+  next: NextFunction,
+) => {
+  try {
+    const userId = getCurrentUserId(request);
+    const friendId = objectIdSchema.parse(request.body?.friendId);
+    const newChat = await chatService.addChat({
+      participants: [userId, friendId],
+    });
+    response.status(201).send(newChat);
+  } catch (e: unknown) {
+    next(e);
+  }
+};
 
 const deleteChat = async (
-  request: Request<{ id: string }>, 
-  response: Response<ChatDTO>, 
-  next: NextFunction
+  request: Request<{ id: string }>,
+  response: Response<ChatDTO>,
+  next: NextFunction,
 ) => {
   try {
     const userId = getCurrentUserId(request);
     const chatId = objectIdSchema.parse(request.params?.id);
     const deletedChat = await chatService.deleteChat({ id: chatId, userId });
     response.send(deletedChat);
-  } catch(e: unknown) {
+  } catch (e: unknown) {
     next(e);
   }
-}
+};
 
 export default {
-    getMessages,
-    getChats,
-    createChat,
-    deleteChat,
-    updateChat
+  getMessages,
+  getChats,
+  createChat,
+  deleteChat,
+  updateChat,
 };
