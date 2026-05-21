@@ -3,21 +3,21 @@ import chatService from "../../services/chatService.ts";
 import {
     addChat,
     addRandomUser,
-    generateRandomUserData
+    randomUser
 } from "../test_helper.ts";
 import messageService from "../../services/messageService.ts";
 import userService from "../../services/userService.ts";
 import { initLazy } from "../test_lazy.ts";
-import { ChatDTO, UserDTO } from "../../types/index.ts";
+import { ChatDocument, UserDocument } from "../../types/index.ts";
 
+const TOTAL_CHATS = 10;
 describe("Chat service", () => {
-    const TOTAL_CHATS = 10;
     const { lazy, define, resolve, clear } = initLazy<{
-        user: UserDTO
-        friend: UserDTO
+        user: UserDocument
+        friend: UserDocument
         participants: [string, string],
-        chat: ChatDTO,
-        chatList: ChatDTO[]
+        chat: ChatDocument,
+        chatList: ChatDocument[]
     }>();
 
     define("user", addRandomUser);
@@ -34,7 +34,7 @@ describe("Chat service", () => {
                 .insertUsers(
                     Array.from({ length: TOTAL_CHATS }, () => ({
                         authProvider: "local",
-                        ...generateRandomUserData()
+                        ...randomUser()
                     }))
                 )
         const userId = (await lazy.user).id;
