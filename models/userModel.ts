@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { NotAcceptedError } from "../utils/errors.ts";
+import { userSerializer } from "../utils/serializers.ts";
 
 export const userSchema = new Schema({
   username: { type: String, required: true, unique: true },
@@ -18,26 +19,15 @@ export const userSchema = new Schema({
   deleted: { type: Boolean, default: false },
 });
 
-userSchema.pre("save", async function () {
+userSchema.pre("save", function () {
   if (this.authProvider === "local" && !this.password) {
     throw new NotAcceptedError("Password required for local accounts");
   }
 });
 
+
 userSchema.set("toJSON", {
-  transform: (_document, returnedObject: Record<string, any>) => {
-    returnedObject.id = returnedObject._id?.toString();
-    const deletables = [
-      "_id",
-      "__v",
-      "password",
-      "refreshToken",
-      "authProvider",
-    ];
-    for (const deletable of deletables) {
-      delete returnedObject[deletable];
-    }
-  },
+  transform: (document, _returnedObject) => userSerializer(document),
 });
 
 const User = mongoose.model("User", userSchema);
