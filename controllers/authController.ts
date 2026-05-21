@@ -15,7 +15,7 @@ import type {
   NewUser,
   UpdateCredentialsPayload,
   UserDTO,
-} from "../types/index.ts";
+} from "../types.ts";
 
 const signup = async (
   request: Request<unknown, unknown, NewUser>,

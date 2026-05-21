@@ -2,7 +2,7 @@ import db from "../../utils/db.ts";
 import userService from "../../services/userService.ts";
 import { addRandomUser, randomUser } from "../test_helper.ts";
 import { initLazy } from "../test_lazy.ts";
-import { UserDocument } from "../../types/index.ts";
+import { UserDocument } from "../../types.ts";
 
 describe("User service", () => {
   const { lazy, define, clear } = initLazy<{

@@ -2,7 +2,7 @@ import supertest from "supertest";
 import app from "../app.ts";
 import chatService from "../services/chatService.ts";
 import userService from "../services/userService.ts";
-import { LoginPayload } from "../types/index.ts";
+import { LoginPayload } from "../types.ts";
 
 export const sample = (array: any[]) => {
   return array[Math.floor(Math.random() * array.length)];

@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import type { ChatDocument } from "../types/index.ts";
+import type { ChatDocument } from "../types.ts";
 import { chatSerializer } from "../utils/serializers.ts";
 
 export const chatSchema = new Schema({

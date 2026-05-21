@@ -1,5 +1,5 @@
 import messageService from "../services/messageService.ts";
-import type { MessageDTO, NewMessage, UpdateMessage } from "../types/index.ts";
+import type { MessageDTO, NewMessage, UpdateMessage } from "../types.ts";
 import type { Response, Request, NextFunction } from "express";
 import { getCurrentUserId } from "../utils/auth.ts";
 import {

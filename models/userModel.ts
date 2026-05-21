@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { NotAcceptedError } from "../utils/errors.ts";
 import { userSerializer } from "../utils/serializers.ts";
-import type { UserDocument } from "../types/index.ts";
+import type { UserDocument } from "../types.ts";
 
 export const userSchema = new Schema({
   username: { type: String, required: true, unique: true },

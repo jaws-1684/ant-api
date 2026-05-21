@@ -1,6 +1,6 @@
 import Chat from "../models/chatModel.ts";
 import Message from "../models/messageModel.ts";
-import type { ChatDocument, ChatDTO, MessageDocument } from "../types/index.ts";
+import type { ChatDocument, ChatDTO, MessageDocument } from "../types.ts";
 
 interface ChatServiceParams {
   id: string;

@@ -1,4 +1,4 @@
-import type { NewMessage, MessageDTO, UpdateMessage } from "../types/index.ts";
+import type { NewMessage, MessageDTO, UpdateMessage } from "../types.ts";
 import Message from "../models/messageModel.ts";
 import Chat from "../models/chatModel.ts";
 

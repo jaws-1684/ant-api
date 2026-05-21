@@ -1,4 +1,4 @@
-import type { ChatDTO, MessageDTO } from "../types/index.ts";
+import type { ChatDTO, MessageDTO } from "../types.ts";
 import type { Response, Request, NextFunction } from "express";
 import { pageSchema, objectIdSchema } from "../utils/schemas.ts";
 import { getCurrentUserId } from "../utils/auth.ts";

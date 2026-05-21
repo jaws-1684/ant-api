@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import type { MessageDocument } from "../types/index.ts";
+import type { MessageDocument } from "../types.ts";
 import { messageSerializer } from "../utils/serializers.ts";
 
 export const messageSchema = new mongoose.Schema(

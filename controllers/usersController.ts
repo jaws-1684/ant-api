@@ -1,5 +1,5 @@
 import type { Response, Request, NextFunction } from "express";
-import type { UserDTO } from "../types/index.ts";
+import type { UserDTO } from "../types.ts";
 import { getCurrentUserId } from "../utils/auth.ts";
 import { updateUserSchema } from "../utils/schemas.ts";
 import userService from "../services/userService.ts";

@@ -14,7 +14,7 @@ import {
   MessageDocument,
   UserDocument,
   UserDTO,
-} from "../../types/index.ts";
+} from "../../types.ts";
 import chatService from "../../services/chatService.ts";
 import messageService from "../../services/messageService.ts";
 

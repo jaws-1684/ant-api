@@ -1,7 +1,7 @@
 import db from "../../utils/db.ts";
 import messageService from "../../services/messageService.ts";
 import { addTestEntry } from "../test_helper.ts";
-import type { MessageDocument } from "../../types/index.ts";
+import type { MessageDocument } from "../../types.ts";
 
 describe("Message service", () => {
   let testEntry: Record<"userId" | "chatId" | "friendId", string>;

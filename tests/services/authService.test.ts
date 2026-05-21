@@ -3,7 +3,7 @@ import userService from "../../services/userService.ts";
 import authService from "../../services/authService.ts";
 import { addRandomUser, randomUser } from "../test_helper.ts";
 import { initLazy } from "../test_lazy.ts";
-import { UserDTO } from "../../types/index.ts";
+import { UserDTO } from "../../types.ts";
 
 describe("Auth service", () => {
   const { lazy, define, clear } = initLazy<{

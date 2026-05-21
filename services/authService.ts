@@ -7,7 +7,7 @@ import type {
   LoginPayload,
   UpdateCredentialsPayload,
   UserDocument,
-} from "../types/index.ts";
+} from "../types.ts";
 import { authorizedUser, hashPassword, matchPassword } from "../utils/auth.ts";
 
 const createAccessToken = async (refreshToken: string): Promise<string> => {

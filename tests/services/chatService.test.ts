@@ -4,7 +4,7 @@ import { addChat, addRandomUser, randomUser } from "../test_helper.ts";
 import messageService from "../../services/messageService.ts";
 import userService from "../../services/userService.ts";
 import { initLazy } from "../test_lazy.ts";
-import { ChatDocument, UserDocument } from "../../types/index.ts";
+import { ChatDocument, UserDocument } from "../../types.ts";
 
 const TOTAL_CHATS = 10;
 describe("Chat service", () => {
@@ -61,7 +61,7 @@ describe("Chat service", () => {
       userId: user.id,
     });
     const deletedChat = await chatService.findById(chat.id);
-    expect(deletedChat?.deletedFor).toContain(user.id);
+    expect(deletedChat?.deletedFor.map(String)).toEqual([user.id]);
   });
 
   it("#markAsRead should update lastReadAt for the user", async () => {

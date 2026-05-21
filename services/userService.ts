@@ -3,7 +3,7 @@ import type {
   NewUser,
   UserDocument,
   UpdateUser,
-} from "../types/index.ts";
+} from "../types.ts";
 import { hashPassword } from "../utils/auth.ts";
 
 const addUser = async (
