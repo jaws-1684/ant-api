@@ -9,7 +9,6 @@ import type {
   UserDocument,
 } from "../types.ts";
 import { authorizedUser, hashPassword, matchPassword } from "../utils/auth.ts";
-
 const createAccessToken = async (refreshToken: string): Promise<string> => {
   const decoded = jwt.verify(
     refreshToken,
@@ -20,7 +19,7 @@ const createAccessToken = async (refreshToken: string): Promise<string> => {
   return generateAccessToken(user.id);
 };
 const createRefreshToken = async (userId: string): Promise<string> => {
-  const refreshToken = await generateRefreshToken(userId);
+  const refreshToken = generateRefreshToken(userId);
   await userService.updateRefreshToken({ id: userId, refreshToken });
   return refreshToken;
 };
@@ -59,6 +58,7 @@ const deleteProfile = async (
   user.deleted = true;
   await user.save();
 };
+
 export default {
   createAccessToken,
   createRefreshToken,
