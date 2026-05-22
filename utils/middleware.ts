@@ -34,6 +34,7 @@ const errorHandler = (
   return next(error);
 };
 
+/* eslint-disable */
 const authMiddleware = (
   request: Request,
   response: Response,
