@@ -58,29 +58,29 @@ const insertUsers = async (users: NewUser[]) => User.insertMany(users);
 const dropUsers = async () => await User.deleteMany({});
 const addFromGoogleProfile = (profile: GoogleProfile) => {
   return User.findOneAndUpdate(
-          { googleId: profile.id },
-          {
-            googleId: profile.id,
-            username: profile.displayName,
-            email: profile.emails?.[0].value,
-            image: profile.photos?.[0].value,
-            authProvider: "google",
-          },
-          { upsert: true, returnDocument: "after" },
-        );
+    { googleId: profile.id },
+    {
+      googleId: profile.id,
+      username: profile.displayName,
+      email: profile.emails?.[0].value,
+      image: profile.photos?.[0].value,
+      authProvider: "google",
+    },
+    { upsert: true, returnDocument: "after" },
+  );
 };
 const addFromGithubProfile = (profile: GithubProfile) => {
   return User.findOneAndUpdate(
-            { githubId: profile.id },
-            {
-              githubId: profile.id,
-              username: profile.username,
-              email: profile.emails?.[0].value,
-              image: profile.photos?.[0].value,
-              authProvider: "github",
-            },
-            { upsert: true, returnDocument: "after" },
-          );
+    { githubId: profile.id },
+    {
+      githubId: profile.id,
+      username: profile.username,
+      email: profile.emails?.[0].value,
+      image: profile.photos?.[0].value,
+      authProvider: "github",
+    },
+    { upsert: true, returnDocument: "after" },
+  );
 };
 export default {
   addUser,
@@ -92,6 +92,5 @@ export default {
   updateRefreshToken,
   insertUsers,
   addFromGoogleProfile,
-  addFromGithubProfile
-
+  addFromGithubProfile,
 };

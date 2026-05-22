@@ -14,10 +14,13 @@ passport.use(
       secretOrKey: config.JWT_SECRET as string,
     },
     (payload: { userId: string }, done) => {
-      userService.findById(payload.userId).then((user) => {
-        if(user) return done(null, user);
-        return done(null, false);
-      }).catch(e => done(e, false));
+      userService
+        .findById(payload.userId)
+        .then((user) => {
+          if (user) return done(null, user);
+          return done(null, false);
+        })
+        .catch((e) => done(e, false));
     },
   ),
 );
@@ -31,9 +34,9 @@ passport.use(
     },
     (_accessToken, _refreshToken, profile, done) => {
       userService
-      .addFromGoogleProfile(profile as GoogleProfile)
-      .then(user => done(null, user))
-      .catch(e => done(e, false));
+        .addFromGoogleProfile(profile as GoogleProfile)
+        .then((user) => done(null, user))
+        .catch((e) => done(e, false));
     },
   ),
 );
@@ -45,11 +48,16 @@ passport.use(
       clientSecret: config.GITHUB_CLIENT_SECRET as string,
       callbackURL: "/api/auth/github/callback",
     },
-    ( _accessToken: string, _refreshToken: string, profile: GithubProfile, done: VerifiedCallback,) => {
-       userService
-      .addFromGithubProfile(profile)
-      .then(user => done(null, user))
-      .catch(e => done(e, false));
+    (
+      _accessToken: string,
+      _refreshToken: string,
+      profile: GithubProfile,
+      done: VerifiedCallback,
+    ) => {
+      userService
+        .addFromGithubProfile(profile)
+        .then((user) => done(null, user))
+        .catch((e) => done(e, false));
     },
   ),
 );

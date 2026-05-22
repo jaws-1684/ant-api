@@ -26,10 +26,13 @@ export type UpdateMessage = Infer<typeof updateMessageSchema>;
 
 export type ChatEntry = InferSchemaType<typeof mongoChatSchema>;
 export type ChatDocument = HydratedDocument<ChatEntry>;
-export type ChatDTO = Omit<ChatEntry & {
-  lastMessage?: MessageDTO | null;
-  unread?: number;
-} & WithMongoId, "participants"> & { participants: UserDTO[] | mongo.ObjectId[] };
+export type ChatDTO = Omit<
+  ChatEntry & {
+    lastMessage?: MessageDTO | null;
+    unread?: number;
+  } & WithMongoId,
+  "participants"
+> & { participants: UserDTO[] | mongo.ObjectId[] };
 
 type UserSensitiveFields =
   | "password"
@@ -51,7 +54,7 @@ export type UpdateCredentialsPayload = Infer<typeof updateCredentialsSchema>;
 interface Profile {
   id: string;
   emails: Record<"value", string>[];
-  photos: Record<"value", string>[]
+  photos: Record<"value", string>[];
 }
 export type GoogleProfile = Profile & { displayName: string };
 export type GithubProfile = Profile & { username: string };

@@ -26,9 +26,9 @@ userSchema.pre("save", function () {
   }
 });
 
-
 userSchema.set("toJSON", {
-  transform: (_document, returnedObject) => userSerializer(returnedObject as UserDocument),
+  transform: (_document, returnedObject) =>
+    userSerializer(returnedObject as UserDocument),
 });
 
 const User = mongoose.model("User", userSchema);

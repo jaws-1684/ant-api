@@ -1,9 +1,5 @@
 import type { NextFunction, Response, Request } from "express";
-import type {
-  AuthenticatedRequest,
-  UserDocument,
-  UserDTO,
-} from "../types.ts";
+import type { AuthenticatedRequest, UserDocument, UserDTO } from "../types.ts";
 import authService from "../services/authService.ts";
 import config from "./config.ts";
 import userService from "../services/userService.ts";

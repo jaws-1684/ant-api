@@ -27,10 +27,8 @@ export const messageSchema = new mongoose.Schema(
 );
 
 messageSchema.set("toJSON", {
-  transform: (
-    _document,
-    returnedObject,
-  ) => messageSerializer(returnedObject as MessageDocument),
+  transform: (_document, returnedObject) =>
+    messageSerializer(returnedObject as MessageDocument),
 });
 
 const Message = mongoose.model<MessageDocument>("Message", messageSchema);

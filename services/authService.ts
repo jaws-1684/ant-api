@@ -1,7 +1,10 @@
 import jwt from "jsonwebtoken";
 import config from "../utils/config.ts";
 import userService from "./userService.ts";
-import { ForbiddenError, type InvalidCredentialsError } from "../utils/errors.ts";
+import {
+  ForbiddenError,
+  type InvalidCredentialsError,
+} from "../utils/errors.ts";
 import { generateAccessToken, generateRefreshToken } from "../utils/tokens.ts";
 import type {
   LoginPayload,

@@ -20,7 +20,8 @@ export const chatSchema = new Schema({
 });
 
 chatSchema.set("toJSON", {
-  transform: (_document, returnedObject) => chatSerializer(returnedObject as ChatDocument),
+  transform: (_document, returnedObject) =>
+    chatSerializer(returnedObject as ChatDocument),
 });
 
 const Chat = mongoose.model<ChatDocument>("Chat", chatSchema);

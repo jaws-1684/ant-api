@@ -76,7 +76,8 @@ export class ExternalError extends AppError {
     this.message = error?.message ?? "External error";
   }
   static externalErrorRegistry: ExternalErrorConstructor[] = [];
-  static register = (obj: ExternalErrorConstructor) => ExternalError.externalErrorRegistry.push(obj);
+  static register = (obj: ExternalErrorConstructor) =>
+    ExternalError.externalErrorRegistry.push(obj);
   static canHandle = (e: Error) =>
     ExternalError.externalErrorRegistry.some((cls) => cls.handles(e));
   static handles = (_e: Error): boolean => false;
