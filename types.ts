@@ -48,3 +48,10 @@ export interface AuthenticatedRequest extends Request {
   user: UserDocument;
 }
 export type UpdateCredentialsPayload = Infer<typeof updateCredentialsSchema>;
+interface Profile {
+  id: string;
+  emails: Record<"value", string>[];
+  photos: Record<"value", string>[]
+}
+export type GoogleProfile = Profile & { displayName: string };
+export type GithubProfile = Profile & { username: string };
