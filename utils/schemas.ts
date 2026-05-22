@@ -28,9 +28,9 @@ export const updateCredentialsSchema = w.union([
 export const messageSchema = w.object({
   chatId: w.objectId(),
   userId: w.objectId(),
-  images: w.array(w.url().image()).optional(),
-  content: w.string().trim().min(1).max(5000).escape(),
-});
+  images: w.array(w.url().image().min(1)).optional(),
+  content: w.string().trim().min(1).max(5000).escape().optional(),
+}).refine((obj) => Boolean(obj.content) || Boolean(obj.images?.length), "Image or content is required");
 export const updateMessageSchema = w.union([
   messageSchema.pick(["userId", "content"]),
   idSchema,
