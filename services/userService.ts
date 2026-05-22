@@ -82,6 +82,11 @@ const addFromGithubProfile = (profile: GithubProfile) => {
     { upsert: true, returnDocument: "after" },
   );
 };
+const searchUsers = async (query: string) => {
+  return User.find({
+    username: { $regex: query, $options: 'i' }
+  }).select('username avatar');
+};
 export default {
   addUser,
   updateUser,
@@ -93,4 +98,5 @@ export default {
   insertUsers,
   addFromGoogleProfile,
   addFromGithubProfile,
+  searchUsers
 };
