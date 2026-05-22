@@ -3,7 +3,7 @@ import type {
   AuthenticatedRequest,
   UserDocument,
   UserDTO,
-} from "../types/index.ts";
+} from "../types.ts";
 import authService from "../services/authService.ts";
 import config from "./config.ts";
 import userService from "../services/userService.ts";
@@ -43,7 +43,7 @@ export const authorizedUser = async ({
   if (!user) throw new ForbiddenError();
   const match = await matchPassword(password, user.password!);
   if (isMatch(match)) return user;
-  throw match.error;
+  throw match.error as Error;
 };
 
 export const hashPassword = async (plainTextPassword: string) => {
