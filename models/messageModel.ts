@@ -6,8 +6,8 @@ export const messageSchema = new mongoose.Schema(
   {
     content: {
       type: String,
-      required: true,
       minlength: 1,
+      maxLength: 5000,
     },
     userId: {
       type: Schema.Types.ObjectId,
