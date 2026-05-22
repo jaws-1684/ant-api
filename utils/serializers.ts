@@ -1,5 +1,5 @@
 import type { mongo } from "mongoose";
-import type { ChatDocument, ChatDTO, MessageDocument, MessageDTO, UserDocument, UserDTO } from "../types/index.ts";
+import type { ChatDocument, ChatDTO, MessageDocument, MessageDTO, UserDocument, UserDTO } from "../types.ts";
 
 const pick = <T extends mongo.Document, K extends keyof T>(obj: T, keys: K[]) => {
     return Object.fromEntries(
@@ -34,7 +34,7 @@ export const chatSerializer = (chatDocument: ChatDocument): ChatDTO => {
     return {
         ...serialized,
         participants,
-        id: chatDocument?.id?.toString()
+        id: chatDocument?._id?.toString()
     };
 };
 export const messageSerializer = (messageDocument: MessageDocument): MessageDTO => {
@@ -44,6 +44,6 @@ export const messageSerializer = (messageDocument: MessageDocument): MessageDTO 
     ]);
     return {
         ...serialized,
-        id: messageDocument?.id?.toString()
+        id: messageDocument?._id?.toString()
     };
-}
+};
