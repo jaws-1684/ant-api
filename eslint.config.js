@@ -36,6 +36,6 @@ export default defineConfig([
         { argsIgnorePattern: "^_" },
       ],
     },
-    ignores: ["dist/*", "tests/*/**", "utils/w.ts"],
+    ignores: ["dist/*", "tests/*", "tests/*/**", "utils/w.ts"],
   },
 ]);
