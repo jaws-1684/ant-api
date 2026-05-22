@@ -10,7 +10,7 @@ import messageEntries from "../data/messageEntries.ts";
 import userEntries from "../data/userEntries.ts";
 import bcrypt from "bcrypt";
 try {
-  await mongoose.connect(config.MONGODB_URI as string, { family: 4 });
+  await mongoose.connect(config.MONGODB_URI, { family: 4 });
   logger.info("connected to MongoDB");
 } catch (e) {
   if (e instanceof Error) {

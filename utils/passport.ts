@@ -11,7 +11,7 @@ passport.use(
   new JwtStrategy(
     {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: config.JWT_SECRET as string,
+      secretOrKey: config.JWT_SECRET,
     },
     (payload: { userId: string }, done) => {
       userService
@@ -28,8 +28,8 @@ passport.use(
 passport.use(
   new GoogleStrategy(
     {
-      clientID: config.GOOGLE_CLIENT_ID as string,
-      clientSecret: config.GOOGLE_CLIENT_SECRET as string,
+      clientID: config.GOOGLE_CLIENT_ID,
+      clientSecret: config.GOOGLE_CLIENT_SECRET,
       callbackURL: "/api/auth/google/callback",
     },
     (_accessToken, _refreshToken, profile, done) => {
@@ -44,8 +44,8 @@ passport.use(
 passport.use(
   new GithubStrategy(
     {
-      clientID: config.GITHUB_CLIENT_ID as string,
-      clientSecret: config.GITHUB_CLIENT_SECRET as string,
+      clientID: config.GITHUB_CLIENT_ID,
+      clientSecret: config.GITHUB_CLIENT_SECRET,
       callbackURL: "/api/auth/github/callback",
     },
     (
