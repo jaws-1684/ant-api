@@ -6,6 +6,7 @@ export const objectIdSchema = w.objectId();
 export const idSchema = w.object({
   id: w.objectId(),
 });
+export const stringSchema = w.string().min(1);
 export const userSchema = w.object({
   username: w.string().min(3).max(20).escape(),
   email: w.email(),
@@ -35,7 +36,6 @@ export const updateMessageSchema = w.union([
   messageSchema.pick(["userId", "content"]),
   idSchema,
 ]);
-
 export const loginSchema = w
   .union([
     userSchema.pick(["username", "email", "password"]).partial({
