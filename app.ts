@@ -10,6 +10,7 @@ import cloudinaryRouter from "./routes/cloudinaryRouter.ts"
 import cookieParser from "cookie-parser";
 import "./utils/errors.ts";
 import cloudinary from "./utils/cloudinary.ts";
+import searchRouter from "./routes/searchRouter.ts";
 const app = express();
 const allowedOrigins = ["http://localhost:5173"];
 
@@ -30,6 +31,7 @@ app.use(middleware.authMiddleware);
 app.use("/api/messages", messageRouter);
 app.use("/api/chats", chatsRouter);
 app.use("/api/cloudinary", cloudinaryRouter);
+app.use("/api/search", searchRouter);
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);
 
