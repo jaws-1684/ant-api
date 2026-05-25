@@ -14,6 +14,7 @@ export const chatSchema = new Schema({
     type: String,
     default: null,
   },
+  image: { type: String, default: null },
   isGroup: { type: Boolean, default: false },
   admin: { type: String },
   closed: { type: Boolean, default: false },
