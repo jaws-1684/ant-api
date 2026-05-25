@@ -11,6 +11,7 @@ import cookieParser from "cookie-parser";
 import "./utils/errors.ts";
 import cloudinary from "./utils/cloudinary.ts";
 import searchRouter from "./routes/searchRouter.ts";
+import groupRouter from "./routes/groupRouter.ts";
 const app = express();
 const allowedOrigins = ["http://localhost:5173"];
 
@@ -29,7 +30,8 @@ app.use(middleware.requestLogger);
 app.use("/api/auth", authRouter);
 app.use(middleware.authMiddleware);
 app.use("/api/messages", messageRouter);
-app.use("/api/chats", chatsRouter);
+app.use("/api/chats", chatRouter);
+app.use("/api/groups", groupRouter);
 app.use("/api/cloudinary", cloudinaryRouter);
 app.use("/api/search", searchRouter);
 app.use(middleware.unknownEndpoint);
