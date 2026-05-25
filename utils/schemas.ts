@@ -46,3 +46,12 @@ export const loginSchema = w
     (obj) => Boolean(obj.email) || Boolean(obj.username),
     "Email or username expected",
   );
+export const groupSchema = w.object({
+  name: w.string().min(3).max(20),
+  participants: w.array(w.objectId()).default([]),
+  image: w.url().image().nullable().optional()
+});
+export const updateGroupSchema = w.union([
+  groupSchema.partial(),
+  idSchema]
+);
