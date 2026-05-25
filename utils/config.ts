@@ -15,7 +15,7 @@ const cookieOptions = {
   sameSite: "strict" as const,
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
-
+const CLIENT_URL = env.CLIENT_URL || "http://localhost:5173";
 export default {
   PORT: env.PORT || 3001,
   MONGODB_URI,
@@ -27,7 +27,8 @@ export default {
   GOOGLE_CLIENT_SECRET: env.GOOGLE_CLIENT_SECRET,
   GITHUB_CLIENT_ID: env.GITHUB_CLIENT_ID,
   GITHUB_CLIENT_SECRET: env.GITHUB_CLIENT_SECRET,
-  CLIENT_URL: env.CLIENT_URL || "http://localhost:5173",
+  CLIENT_URL,
+  ALLOWED_ORIGINS: [CLIENT_URL],
   CLOUDINARY_API_KEY: env.CLOUDINARY_API_KEY,
   CLOUDINARY_SECRET: env.CLOUDINARY_API_SECRET,
   CLOUDINARY_CLOUD_NAME: env.CLOUDINARY_CLOUD_NAME,
