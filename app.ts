@@ -12,11 +12,12 @@ import "./utils/errors.ts";
 import cloudinary from "./utils/cloudinary.ts";
 import searchRouter from "./routes/searchRouter.ts";
 import groupRouter from "./routes/groupRouter.ts";
+import config from "./utils/config.ts";
+
 const app = express();
-const allowedOrigins = ["http://localhost:5173"];
 
 const options: cors.CorsOptions = {
-  origin: allowedOrigins,
+  origin: config.ALLOWED_ORIGINS,
 };
 cloudinary.config();
 await db.connect();
