@@ -1,7 +1,3 @@
-import mongoose from "mongoose";
-import logger from "./logger.ts";
-import config from "./config.ts";
-
 import Message from "../models/messageModel.ts";
 import Chat from "../models/chatModel.ts";
 import User from "../models/userModel.ts";
@@ -9,14 +5,9 @@ import User from "../models/userModel.ts";
 import messageEntries from "../data/messageEntries.ts";
 import userEntries from "../data/userEntries.ts";
 import bcrypt from "bcrypt";
-try {
-  await mongoose.connect(config.MONGODB_URI, { family: 4 });
-  logger.info("connected to MongoDB");
-} catch (e) {
-  if (e instanceof Error) {
-    logger.error("error connection to MongoDB:", e.message);
-  }
-}
+import db from "./db.ts";
+
+await db.connect();
 
 const Models = [Message, Chat, User];
 
@@ -72,5 +63,4 @@ try {
   console.log(e);
 }
 
-await mongoose.connection.close();
-console.log("Mongoose connection closed");
+await db.disconnect();
