@@ -5,10 +5,12 @@ interface ParticipantsTuple {
   participants: readonly [string, string];
 }
 type IsGroup = { group?: true | false };
-const getChats = async (userId: string): Promise<ChatDTO[]> => {
+const getChats = async (userId: string, { group }: IsGroup = { group: false }): Promise<ChatDTO[]> => {
   const chats = await Chat.find({
     participants: userId,
     deletedFor: { $nin: [userId] },
+    isGroup: group,
+    closed: false
   }).populate("participants");
 
   const chatsWithUnread = await Promise.all(
@@ -85,7 +87,6 @@ const findByParticipants = async ({ participants }: ParticipantsTuple) => {
     participants: { $all: participants },
   });
 };
-
 const dropChats = async () => Chat.deleteMany({});
 export default {
   addChat,
