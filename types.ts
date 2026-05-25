@@ -9,6 +9,8 @@ import type {
   updateMessageSchema,
   loginSchema,
   updateCredentialsSchema,
+  groupSchema,
+  updateGroupSchema,
 } from "./utils/schemas.ts";
 import type { Infer } from "./utils/w.ts";
 
@@ -51,6 +53,8 @@ export interface AuthenticatedRequest extends Request {
   user: UserDocument;
 }
 export type UpdateCredentialsPayload = Infer<typeof updateCredentialsSchema>;
+export type GroupPayload = Infer<typeof groupSchema>;
+export type UpdateGroup = Infer<typeof updateGroupSchema>;
 interface Profile {
   id: string;
   emails: Record<"value", string>[];
@@ -58,3 +62,7 @@ interface Profile {
 }
 export type GoogleProfile = Profile & { displayName: string };
 export type GithubProfile = Profile & { username: string };
+export interface ChatServiceParams {
+  id: string;
+  userId: string;
+}
