@@ -5,8 +5,8 @@ import cors from "cors";
 import passport from "passport";
 import messageRouter from "./routes/messageRouter.ts";
 import authRouter from "./routes/authRouter.ts";
-import chatsRouter from "./routes/chatRouter.ts";
-import cloudinaryRouter from "./routes/cloudinaryRouter.ts"
+import chatRouter from "./routes/chatRouter.ts";
+import cloudinaryRouter from "./routes/cloudinaryRouter.ts";
 import cookieParser from "cookie-parser";
 import "./utils/errors.ts";
 import cloudinary from "./utils/cloudinary.ts";
