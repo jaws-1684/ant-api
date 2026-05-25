@@ -1,5 +1,4 @@
-import jwt from "jsonwebtoken";
-import config from "../utils/config.ts";
+
 import userService from "./userService.ts";
 import {
   ForbiddenError,
@@ -11,12 +10,9 @@ import type {
   UpdateCredentialsPayload,
   UserDocument,
 } from "../types.ts";
-import { authorizedUser, hashPassword, matchPassword } from "../utils/auth.ts";
+import { authorizedUser, hashPassword, matchPassword, decodeRefreshToken } from "../utils/auth.ts";
 const createAccessToken = async (refreshToken: string): Promise<string> => {
-  const decoded = jwt.verify(
-    refreshToken,
-    config.JWT_REFRESH_SECRET as string,
-  ) as { userId: string };
+  const decoded = decodeRefreshToken(refreshToken);
   const user = await userService.findById(decoded.userId);
   if (!user || user.refreshToken !== refreshToken) throw new ForbiddenError();
   return generateAccessToken(user.id);
