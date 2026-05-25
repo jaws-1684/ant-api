@@ -1,4 +1,4 @@
-import type { NewMessage, MessageDTO, UpdateMessage } from "../types.ts";
+import type { NewMessage, MessageDTO, UpdateMessage, MessageDocument } from "../types.ts";
 import Message from "../models/messageModel.ts";
 import Chat from "../models/chatModel.ts";
 
@@ -40,7 +40,7 @@ const getMessages = async ({
     return message.toJSON();
   });
 };
-const addMessage = async (newMessage: NewMessage): Promise<MessageDTO> => {
+const addMessage = async (newMessage: NewMessage): Promise<MessageDocument> => {
   await Chat.findOne({
     _id: newMessage.chatId,
     participants: newMessage.userId,
@@ -49,7 +49,7 @@ const addMessage = async (newMessage: NewMessage): Promise<MessageDTO> => {
 };
 const updateMessage = async (
   updateMessage: UpdateMessage,
-): Promise<MessageDTO> => {
+): Promise<MessageDocument> => {
   const message = await Message.findOne({
     _id: updateMessage.id,
     userId: updateMessage.userId,
