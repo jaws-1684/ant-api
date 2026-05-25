@@ -8,7 +8,6 @@ import http from "http";
 const server = http.createServer(app);
 io.attach(server);
 
-await db.connect();
 server.listen(config.PORT, () => {
  logger.info(`Server running on port ${config.PORT}`);
 });
