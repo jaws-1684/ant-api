@@ -17,7 +17,7 @@ export const withAuth = async (
   try {
     const user = await fn();
     const refreshToken = await authService.createRefreshToken(user.id);
-    response.cookie("refreshToken", refreshToken, config.cookieOptions);
+    response.cookie("refreshToken", refreshToken, config.COOKIE_OPTIONS);
     response.status(status).json(user);
   } catch (e: unknown) {
     next(e);

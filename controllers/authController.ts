@@ -104,7 +104,7 @@ const oauthCallback = async (
   try {
     if (!request.user) throw new UnauthorizedError();
     const refreshToken = await authService.createRefreshToken(request.user.id);
-    response.cookie("refreshToken", refreshToken, config.cookieOptions);
+    response.cookie("refreshToken", refreshToken, config.COOKIE_OPTIONS);
     response.redirect(config.CLIENT_URL);
   } catch (e) {
     next(e);

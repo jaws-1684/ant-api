@@ -9,7 +9,7 @@ const MONGODB_URI =
 const REDIS_URL = env.NODE_ENV === "production"
     ? env.REDIS_URL
     : env.DEVELOPMENT_REDIS_URL;    
-const cookieOptions = {
+const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: env.NODE_ENV === "production",
   sameSite: "strict" as const,
@@ -32,5 +32,5 @@ export default {
   CLOUDINARY_API_KEY: env.CLOUDINARY_API_KEY,
   CLOUDINARY_SECRET: env.CLOUDINARY_API_SECRET,
   CLOUDINARY_CLOUD_NAME: env.CLOUDINARY_CLOUD_NAME,
-  cookieOptions,
+  COOKIE_OPTIONS,
 };
