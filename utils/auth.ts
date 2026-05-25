@@ -5,6 +5,7 @@ import config from "./config.ts";
 import userService from "../services/userService.ts";
 import bcrypt from "bcrypt";
 import { ForbiddenError, InvalidCredentialsError } from "./errors.ts";
+import jwt from "jsonwebtoken";
 
 const SALT_ROUNDS = 10;
 export const withAuth = async (
@@ -59,4 +60,10 @@ export const isMatch = (match: {
 }) => {
   if (match.ok) return true;
   return false;
+};
+export const decodeAccessToken = (token: string) => {
+  return jwt.verify(token, config.JWT_SECRET) as { userId: string };
+};
+export const decodeRefreshToken = (token: string) => {
+  return jwt.verify(token, config.JWT_REFRESH_SECRET) as { userId: string };
 };
