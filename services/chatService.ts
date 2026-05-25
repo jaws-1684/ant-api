@@ -1,15 +1,10 @@
 import Chat from "../models/chatModel.ts";
 import Message from "../models/messageModel.ts";
-import type { ChatDocument, ChatDTO, MessageDocument } from "../types.ts";
-
-interface ChatServiceParams {
-  id: string;
-  userId: string;
-}
+import type { ChatDocument, ChatDTO, MessageDocument, ChatServiceParams } from "../types.ts";
 interface ParticipantsTuple {
   participants: readonly [string, string];
 }
-
+type IsGroup = { group?: true | false };
 const getChats = async (userId: string): Promise<ChatDTO[]> => {
   const chats = await Chat.find({
     participants: userId,
