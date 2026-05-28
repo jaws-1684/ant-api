@@ -1,4 +1,4 @@
-import redis from "../utils/redis.ts";
+import { redis } from "../utils/redis.ts";
 
 const EXPIRY = 60;
 
