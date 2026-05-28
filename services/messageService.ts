@@ -1,6 +1,8 @@
 import type { NewMessage, MessageDTO, UpdateMessage, MessageDocument } from "../types.ts";
 import Message from "../models/messageModel.ts";
+import Notification from "../models/notificationModel.ts";
 import Chat from "../models/chatModel.ts";
+import socketService from "./socketService.ts";
 
 interface MessageServiceParams {
   id: string;
@@ -33,19 +35,21 @@ const getMessages = async ({
     .sort({ createdAt: -1 })
     .skip(offset)
     .limit(limit);
-  return messages.map((message) => {
-    if (message.softDeleted) {
-      return { ...message.toJSON(), content: "This message was deleted" };
-    }
-    return message.toJSON();
-  });
+  return messages.map(m => m.toJSON());
 };
 const addMessage = async (newMessage: NewMessage): Promise<MessageDocument> => {
-  await Chat.findOne({
+   await Chat.findOne({
     _id: newMessage.chatId,
     participants: newMessage.userId,
   }).orFail();
-  return new Message(newMessage).save();
+  const message = await new Message(newMessage).save();
+  await Notification.findOneAndUpdate(
+      { chatId: newMessage.chatId, userId: newMessage.userId },
+      { "$inc": { newMessages: 1 } },
+      { upsert: true },
+    );
+  await socketService.broadcastMessage("message:new", message);
+  return message;
 };
 const updateMessage = async (
   updateMessage: UpdateMessage,
@@ -56,14 +60,18 @@ const updateMessage = async (
   }).orFail();
   message.isEdited = true;
   message.content = updateMessage.content;
-  return message.save();
+  const updated = await message.save();
+  await socketService.broadcastMessage("message:updated", updated);
+  return updated;
 };
 const deleteMessage = async ({ id, userId }: MessageServiceParams) => {
-  return Message.findOneAndUpdate(
+  const deleted = await Message.findOneAndUpdate(
     { _id: id, userId },
     { softDeleted: true },
     { returnDocument: "after" },
   ).orFail();
+  await socketService.broadcastMessage("message:updated", deleted);
+  return deleted;
 };
 const findMessage = async ({ id, userId }: MessageServiceParams) => {
   return Message.findOne({ _id: id, userId });
@@ -71,7 +79,6 @@ const findMessage = async ({ id, userId }: MessageServiceParams) => {
 const insertMessages = async (messages: NewMessage[]) => {
   return Message.insertMany(messages);
 };
-
 const dropMessages = async () => Message.deleteMany({});
 export default {
   getMessages,
