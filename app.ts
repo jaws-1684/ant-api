@@ -13,6 +13,7 @@ import cloudinary from "./utils/cloudinary.ts";
 import searchRouter from "./routes/searchRouter.ts";
 import groupRouter from "./routes/groupRouter.ts";
 import config from "./utils/config.ts";
+import redis from "./utils/redis.ts";
 
 const app = express();
 
@@ -20,6 +21,7 @@ const options: cors.CorsOptions = {
   origin: config.ALLOWED_ORIGINS,
 };
 cloudinary.config();
+redis.config();
 await db.connect();
 app.use(cors(options));
 app.use(passport.initialize());

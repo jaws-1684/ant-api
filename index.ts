@@ -6,7 +6,10 @@ import io from "./utils/socket.ts";
 import http from "http";
 
 const server = http.createServer(app);
-io.attach(server);
+if (!config.TEST_ENV) {
+  logger.info("Websocket initialized");
+  io.attach(server);
+};
 
 server.listen(config.PORT, () => {
  logger.info(`Server running on port ${config.PORT}`);
