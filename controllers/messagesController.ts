@@ -7,7 +7,7 @@ import {
   updateMessageSchema,
   objectIdSchema,
 } from "../utils/schemas.ts";
-
+import io, { broadcastMessage } from "../utils/socket.ts";
 const createMessage = async (
   request: Request<unknown, unknown, NewMessage>,
   response: Response<MessageDTO>,
@@ -17,6 +17,7 @@ const createMessage = async (
     const userId = getCurrentUserId(request);
     const message = messageSchema.parse({ ...request.body, userId });
     const newMessage = await messageService.addMessage(message);
+    broadcastMessage("message:new", newMessage);
     response.status(201).send(newMessage);
   } catch (e: unknown) {
     next(e);
@@ -35,6 +36,7 @@ const deleteMessage = async (
       id: messageId,
       userId,
     });
+    broadcastMessage("message:updated", deletedMessage);
     response.send(deletedMessage);
   } catch (e: unknown) {
     next(e);
@@ -53,6 +55,7 @@ const updateMessage = async (
       userId,
     });
     const updatedMessage = await messageService.updateMessage(message);
+    broadcastMessage("message:updated", updatedMessage);
     response.send(updatedMessage);
   } catch (e: unknown) {
     next(e);

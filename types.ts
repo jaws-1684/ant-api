@@ -2,6 +2,7 @@ import type { InferSchemaType, HydratedDocument, mongo } from "mongoose";
 import type { messageSchema as mongoMessageSchema } from "./models/messageModel.ts";
 import type { chatSchema as mongoChatSchema } from "./models/chatModel.ts";
 import type { userSchema as mongoUserSchema } from "./models/userModel.ts";
+import type { notificationSchema as mongoNotificationSchema } from "./models/notificationModel.ts";
 import type {
   userSchema,
   updateUserSchema,
@@ -16,38 +17,46 @@ import type { Infer } from "./utils/w.ts";
 
 import type { Request } from "express";
 
-interface WithMongoId {
+interface WithId {
   id: string;
-}
-
+} 
+interface WithMongoId {
+  _id: mongo.ObjectId;
+  __v: number;
+};
+export type NotificationEntry = InferSchemaType<typeof mongoNotificationSchema>;
+export type NotificationDocument = HydratedDocument<NotificationEntry>;
+export type NotificationDTO = NotificationEntry & WithId;
+export type ReturnedNotification = NotificationEntry & WithMongoId;
 export type MessageEntry = InferSchemaType<typeof mongoMessageSchema>;
 export type MessageDocument = HydratedDocument<MessageEntry>;
-export type MessageDTO = MessageEntry & WithMongoId;
+export type MessageDTO = MessageEntry & WithId;
 export type NewMessage = Infer<typeof messageSchema>;
 export type UpdateMessage = Infer<typeof updateMessageSchema>;
+export type ReturnedMessage = MessageEntry & WithMongoId;
 
 export type ChatEntry = InferSchemaType<typeof mongoChatSchema>;
 export type ChatDocument = HydratedDocument<ChatEntry>;
-export type ChatDTO = Omit<
-  ChatEntry & {
-    lastMessage?: MessageDTO | null;
-    unread?: number;
-  } & WithMongoId,
-  "participants"
-> & { participants: UserDTO[] | mongo.ObjectId[] };
-
-type UserSensitiveFields =
-  | "password"
-  | "refreshToken"
-  | "authProvider"
-  | "googleId"
-  | "githubId"
-  | "deleted";
+type ChatDTOTransform = {
+  participants: UserDTO[] | mongo.ObjectId[],
+  notifications: NotificationDTO[],
+  lastMessage?: MessageDTO | null | undefined,
+  unread?: number
+};
+export type ChatDTO = Omit<ChatEntry, keyof ChatDTOTransform> & ChatDTOTransform & WithId;
+export type ReturnedChat = ChatEntry & WithMongoId;
 export type UserEntry = InferSchemaType<typeof mongoUserSchema>;
 export type UserDocument = HydratedDocument<UserEntry>;
-export type UserDTO = Omit<UserEntry & { id: string }, UserSensitiveFields>;
+export type UserDTO = {
+    username: string;
+    email: string;
+    chats: mongo.ObjectId[];
+    deleted: boolean;
+    image?: string | null | undefined;
+} & WithId;
 export type NewUser = Infer<typeof userSchema>;
 export type UpdateUser = Infer<typeof updateUserSchema>;
+export type ReturnedUser = UserEntry & WithMongoId;
 export type LoginPayload = Infer<typeof loginSchema>;
 export interface AuthenticatedRequest extends Request {
   user: UserDocument;
