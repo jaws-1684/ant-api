@@ -91,7 +91,7 @@ const updateCredentials = async (
       id: userId,
     });
     const updatedUser = await authService.updateCredentials(payload);
-    response.json(updatedUser as UserDTO);
+    response.json(updatedUser);
   } catch (e) {
     next(e);
   }
