@@ -1,17 +1,22 @@
 import dotenv from "dotenv";
 dotenv.config({ path: ".env" });
 
+
 const env = process.env as Record<PropertyKey, string>;
+const NODE_ENV = env.NODE_ENV;
+const TEST_ENV = NODE_ENV == "test";
+const PRODUCTION_ENV = NODE_ENV == "production";
+const DEV_ENV = NODE_ENV == "development";
 const MONGODB_URI =
-  env.NODE_ENV == "test"
+  TEST_ENV
     ? env.TEST_MONGODB_URI
     : env.MONGODB_URI;
-const REDIS_URL = env.NODE_ENV === "production"
+const REDIS_URL = PRODUCTION_ENV
     ? env.REDIS_URL
     : env.DEVELOPMENT_REDIS_URL;    
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: env.NODE_ENV === "production",
+  secure: PRODUCTION_ENV,
   sameSite: "strict" as const,
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
@@ -33,4 +38,8 @@ export default {
   CLOUDINARY_SECRET: env.CLOUDINARY_API_SECRET,
   CLOUDINARY_CLOUD_NAME: env.CLOUDINARY_CLOUD_NAME,
   COOKIE_OPTIONS,
+  NODE_ENV,
+  TEST_ENV,
+  PRODUCTION_ENV,
+  DEV_ENV
 };
