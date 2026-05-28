@@ -75,3 +75,61 @@ export interface ChatServiceParams {
   id: string;
   userId: string;
 }
+export interface ServerToClientEvents {
+  "user:online": (data: { userId: string }) => void;
+  "user:offline": (data: { userId: string }) => void;
+  "chat:new": (chat: ChatDTO) => void;
+  "chat:updated": (chats: ChatDTO) => void;
+  "message:new": (message: MessageDTO) => void;
+  "message:updated": (message: MessageDTO) => void;
+  "typing:start": (data: { userId: string; chatId: string }) => void;
+  "typing:stop": (data: { userId: string; chatId: string }) => void;
+}
+export interface ClientToServerEvents {
+  "typing:start": (chatId: string) => void;
+  "typing:stop": (chatId: string) => void;
+}
+
+export type DocumentType =
+  | MessageDocument
+  | ChatDocument
+  | NotificationDocument
+  | UserDocument;
+export type DTOType =
+  | MessageDTO
+  | ChatDTO
+  | NotificationDTO
+  | UserDTO;
+export type InferDTO<T extends DocumentType> = T extends MessageDocument 
+  ? MessageDTO
+  : T extends ChatDocument
+  ? ChatDTO
+  : T extends NotificationDocument
+  ? NotificationDTO
+  : T extends UserDocument
+  ? UserDTO
+  : never;
+export type InferDocument<T extends DocumentType> = T extends MessageDocument 
+  ? MessageDocument
+  : T extends ChatDocument
+  ? ChatDocument
+  : T extends NotificationDocument
+  ? NotificationDocument
+  : T extends UserDocument
+  ? UserDocument
+  : never;
+  
+export type ReturnedType =
+  | ReturnedUser
+  | ReturnedChat
+  | ReturnedNotification
+  | ReturnedMessage;
+export type InferReturnType<T extends ReturnedType> = T extends ReturnedChat 
+  ? ReturnedChat
+  : T extends ReturnedMessage
+  ? ReturnedMessage
+  : T extends ReturnedNotification
+  ? ReturnedNotification
+  : T extends ReturnedUser
+  ? ReturnedUser
+  : never;
