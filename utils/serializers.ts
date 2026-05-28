@@ -1,59 +1,72 @@
-import type { mongo } from "mongoose";
 import type {
-  ChatDocument,
-  ChatDTO,
-  MessageDocument,
-  MessageDTO,
-  UserDocument,
-  UserDTO,
+  DTOType,
+  InferDocument,
+  ReturnedChat,
+  ReturnedMessage,
+  ReturnedNotification,
+  ReturnedUser,
+  ReturnedType,
+  DocumentType,
+  InferDTO,
+  InferReturnType
 } from "../types.ts";
 
-const pick = <T extends mongo.Document, K extends keyof T>(
+const pick = <T extends ReturnedType, Out extends InferReturnType<T>, K extends keyof Out>(
   obj: T,
   keys: K[],
 ) => {
   return Object.fromEntries(
     Object.entries(obj).filter(([key]) => keys.includes(key as K)),
-  ) as { [P in K]: T[P] };
+  ) as { [P in keyof Out]: Out[P] };
 };
-const omit = <T extends mongo.Document, K extends keyof T>(
-  obj: T,
+const omit = <T extends ReturnedType, Out extends InferReturnType<T>, K extends keyof Out>(
+  obj: Out,
   keys: K[],
 ) => {
   return Object.fromEntries(
     Object.entries(obj).filter(([key]) => !keys.includes(key as K)),
-  ) as { [P in keyof T]: T[P] };
+  ) as { [P in keyof Out]: Out[P] };
 };
 
-export const userSerializer = (userDocument: UserDocument): UserDTO => {
-  const serialized = pick(userDocument, [
+const serializer = <T extends ReturnedType, Out extends InferReturnType<T>>(selector?: (obj: Out) => Out) => {
+  return (obj: Out) => {
+    const omitted = omit(obj, ["_id", "__v"]);
+    const returned = selector 
+      ? selector(omitted)
+      : obj;
+    return {
+      ...returned,
+      id: obj._id.toString()
+    };
+  };
+};
+export const userSerializer = serializer((returnedUser: ReturnedUser) => {
+   return pick(returnedUser, [
     "email",
     "username",
     "image",
     "chats",
   ]);
-  return {
-    ...serialized,
-    id: userDocument?._id?.toString() ?? userDocument?.id,
+});
+export const chatSerializer = serializer((returnedChat: ReturnedChat) => returnedChat);
+export const notificationSerializer = serializer((returnedNotification: ReturnedNotification) => returnedNotification);
+export const messageSerializer = serializer((returnedMessage: ReturnedMessage) => {
+   const replaceDeleted = (message: ReturnedMessage) => {
+    if (message.softDeleted) {
+      return { ...message, content: "This message was deleted" };
+    }
+    return message;
   };
-};
-export const chatSerializer = (chatDocument: ChatDocument): ChatDTO => {
-  const serialized = omit(chatDocument, ["_id", "__v", "participants"]);
-  const participants = chatDocument.participants.map((u: mongo.Document) =>
-    userSerializer(u as UserDocument),
-  );
-  return {
-    ...serialized,
-    participants,
-    id: chatDocument?._id?.toString(),
-  };
-};
-export const messageSerializer = (
-  messageDocument: MessageDocument,
-): MessageDTO => {
-  const serialized = omit(messageDocument, ["_id", "__v"]);
-  return {
-    ...serialized,
-    id: messageDocument?._id?.toString(),
+  return replaceDeleted(returnedMessage);
+});
+export const withDTO = <Doc extends DocumentType, Params, DTO extends DTOType>(
+  getDocument: (obj: Params) => Promise<Doc>,
+  toDTO: (doc: InferDocument<Doc>) => Promise<DTO>,
+  broadcast?: (dto: InferDTO<Doc>) => Promise<void>) => {
+  return async (obj: Params) => {
+    const document = await getDocument(obj) as InferDocument<Doc>;
+    const dto = await toDTO(document) as InferDTO<Doc>;
+    if (broadcast !== undefined) await broadcast(dto);
+    return dto;
   };
 };
