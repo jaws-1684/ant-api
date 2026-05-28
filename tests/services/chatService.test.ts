@@ -4,16 +4,16 @@ import { addChat, addRandomUser, randomUser } from "../test_helper.ts";
 import messageService from "../../services/messageService.ts";
 import userService from "../../services/userService.ts";
 import { initLazy } from "../test_lazy.ts";
-import { ChatDocument, UserDocument } from "../../types.ts";
+import type { ChatDTO, UserDTO } from "../../types.ts";
 
 const TOTAL_CHATS = 10;
 describe("Chat service", () => {
   const { lazy, define, resolve, clear } = initLazy<{
-    user: UserDocument;
-    friend: UserDocument;
+    user: UserDTO;
+    friend: UserDTO;
     participants: [string, string];
-    chat: ChatDocument;
-    chatList: ChatDocument[];
+    chat: ChatDTO;
+    chatList: ChatDTO[];
   }>();
 
   define("user", addRandomUser);
@@ -51,7 +51,7 @@ describe("Chat service", () => {
 
   it("#addChat should create a chat", async () => {
     const chat = await lazy.chat;
-    expect(chat.participants.map(String)).toEqual(await lazy.participants);
+    expect(chat.participants.map(p => p.id)).toEqual(await lazy.participants);
   });
 
   it("#deleteChat should soft delete a chat", async () => {
@@ -64,7 +64,7 @@ describe("Chat service", () => {
     expect(deletedChat?.deletedFor.map(String)).toEqual([user.id]);
   });
 
-  it("#markAsRead should update lastReadAt for the user", async () => {
+  it("#markAsRead should not update lastReadAt for the user if the is no new messages", async () => {
     const { chat, user } = await resolve(["chat", "user"]);
     await chatService.markAsRead({
       id: chat.id,
@@ -72,6 +72,22 @@ describe("Chat service", () => {
     });
 
     const updateChat = await chatService.findById(chat.id);
+    const lastRead = updateChat?.lastReadAt?.get(user.id);
+    expect(lastRead).toBeUndefined();
+  });
+  it("#markAsRead should update lastReadAt for the user if there are new messages", async () => {
+    const { chat, user, friend } = await resolve(["chat", "user", "friend"]);
+     await messageService.addMessage({
+          chatId: chat.id,
+          userId: friend.id,
+          content: "are you there?",
+        });
+    await chatService.markAsRead({
+      id: chat.id,
+      userId: user.id,
+    });
+
+    const updateChat = await chatService.findById(chat.id); 
     const lastRead = updateChat?.lastReadAt?.get(user.id);
     expect(lastRead).toBeDefined();
     expect(lastRead).toBeInstanceOf(Date);
@@ -99,13 +115,13 @@ describe("Chat service", () => {
     it("should return all the chats for the other user", async () => {
       const { user, chatList } = await resolve(["user", "chatList"]);
       const { id, participants } = chatList[0];
-      const friendId = participants[1].toString();
+      const friendId = participants[0].id;
       await chatService.deleteChat({
         id,
         userId: user.id,
       });
 
-      const chats = (await chatService.getChats(friendId)).map(
+      const chats = (await chatService.getChats(friendId.toString())).map(
         (chat) => chat.id,
       );
       expect(chats).toContain(id);
@@ -127,12 +143,16 @@ describe("Chat service", () => {
         });
       });
 
-      it("should return unread count for each chat", async () => {
+      it("should return notifications for each chat", async () => {
         const { chat, user } = await resolve(["chat", "user"]);
         const chats = await chatService.getChats(user.id);
         const unreadChat = chats.find((c) => c.id === chat.id);
-        expect(unreadChat).toHaveProperty("unread");
-        expect(unreadChat?.unread).toEqual(2);
+        expect(unreadChat).toHaveProperty("notifications");
+        
+        const notifications = unreadChat?.notifications;
+
+        const unread = notifications?.find(n => n.userId !== user.id);
+        expect(unread?.newMessages).toEqual(2);
       });
 
       it("should return 0 unread after marking as read", async () => {
@@ -143,10 +163,11 @@ describe("Chat service", () => {
         });
         const chats = await chatService.getChats(user.id);
         const readChat = chats.find((c) => c.id === chat.id);
-        expect(readChat?.unread).toEqual(0);
+        const unread = readChat?.notifications?.find(n => n.userId !== user.id);
+        expect(unread?.newMessages).toEqual(0);
       });
 
-      it("should not count messages sent by the user themselves", async () => {
+      it("should count messages sent by the user themselves", async () => {
         const { chat, user } = await resolve(["chat", "user"]);
         await messageService.addMessage({
           chatId: chat.id,
@@ -155,9 +176,9 @@ describe("Chat service", () => {
         });
 
         const chats = await chatService.getChats(user.id);
-
         const readChat = chats.find((c) => c.id === chat.id);
-        expect(readChat?.unread).toEqual(2);
+        const unread = readChat?.notifications?.find(n => n.userId === user.id);
+        expect(unread?.newMessages).toEqual(1);
       });
 
       it("should return the most recent message per chat", async () => {
