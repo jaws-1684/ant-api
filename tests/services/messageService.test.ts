@@ -145,12 +145,11 @@ describe("Message service", () => {
       expect(messages.length).toBe(0);
     });
     it("should replace deleted message content", async () => {
-      const id = (
-        await messageService.getMessages({
+      const _messages = await messageService.getMessages({
           userId: testEntry.userId,
           chatId: testEntry.chatId,
         })
-      )[0].id!;
+      const id = _messages[0].id!;
       await messageService.deleteMessage({ id, userId: testEntry.userId });
       const messages = await messageService.getMessages({
         chatId: testEntry.chatId,
