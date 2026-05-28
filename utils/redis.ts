@@ -1,9 +1,15 @@
 import { Redis } from "ioredis";
-import config from "./config.ts";
+import appConfig from "./config.ts";
 import logger from "./logger.ts";
 
-const redis = new Redis(config.REDIS_URL);
-redis.on("connect", () => logger.info("[Redis]: Connected"));
-redis.on("error", (err) => logger.error("[Redis Error]:", err.message));
+let redis: Redis;
 
-export default redis;
+const config = () => {
+    if (!appConfig.TEST_ENV) {
+        redis = new Redis(appConfig.REDIS_URL);
+        redis.on("connect", () => logger.info("[Redis]: Connected"));
+        redis.on("error", (err) => logger.error("[Redis Error]:", err.message));
+    };
+};
+export { redis };
+export default { config };
