@@ -3,28 +3,11 @@ import config from "./config.ts";
 import presenceService from "../services/presenceService.ts";
 import { decodeAccessToken } from "./auth.ts";
 import { UnauthorizedError } from "./errors.ts";
-import type { ChatDTO, MessageDTO } from "../types.ts";
-
-interface ServerToClientEvents {
-  "user:online": (data: { userId: string }) => void;
-  "user:offline": (data: { userId: string }) => void;
-  "chat:new": (chat: ChatDTO) => void;
-  "chat:updated": (chats: ChatDTO) => void;
-  "message:new": (message: MessageDTO) => void;
-  "message:updated": (message: MessageDTO) => void;
-  "typing:start": (data: { userId: string; chatId: string }) => void;
-  "typing:stop": (data: { userId: string; chatId: string }) => void;
-}
-
-interface ClientToServerEvents {
-  "typing:start": (chatId: string) => void;
-  "typing:stop": (chatId: string) => void;
-}
+import type { ClientToServerEvents, ServerToClientEvents } from "../types.ts";
 
 interface SocketData {
   userId: string;
-}
-
+};
 const io = new Server<ClientToServerEvents, ServerToClientEvents, object, SocketData>({
   cors: { origin: config.CLIENT_URL, credentials: true },
 });
