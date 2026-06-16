@@ -1,14 +1,12 @@
 import Chat from "../models/chatModel.ts";
-import Message from "../models/messageModel.ts";
 import Notification from "../models/notificationModel.ts";
-import User from "../models/userModel.ts";
-import type { ChatDocument, ChatDTO, ChatServiceParams, ReturnedChat } from "../types.ts";
-import { withDTO } from "../utils/serializers.ts";
+import type { ChatDocument, ChatDTO, ChatServiceParams } from "../types.ts";
+import { withChatDTO, toChatDTO } from "../utils/dto.ts";
+import socketService from "./socketService.ts";
 interface ParticipantsTuple {
   participants: readonly [string, string];
 }
 type IsGroup = { group?: true | false };
-
 const _add = async ({
   participants,
 }: ParticipantsTuple) => {
@@ -39,18 +37,7 @@ const _mark = async ({ id, userId }: ChatServiceParams) => {
   );
   return marked as ChatDocument;
 };
-const toDTO = async <T extends ChatDocument>(doc: T): Promise<ChatDTO> => {
-  const lastMessage = await Message.findOne({ _id: doc.lastMessage });
-  const notifications = await Notification.find({ chatId: doc._id });
-  const participants = await User.find({ '_id': { $in: doc.participants } });
-  const chat = doc.toJSON() as ReturnedChat & { id: string };  
-  return {
-    ...chat,
-    notifications: notifications.map(n => n.toJSON()),
-    participants: participants.map(p => ({ ...p.toJSON(), id: p._id.toString() })),
-    lastMessage: lastMessage?.toJSON()
-  };
-};
+
 const getChats = async (userId: string, { group }: IsGroup = { group: false }): Promise<ChatDTO[]> => {
   const chats = await Chat.find({
     participants: userId,
@@ -58,13 +45,17 @@ const getChats = async (userId: string, { group }: IsGroup = { group: false }): 
     isGroup: group,
     closed: false
   });
-  const dtos = await Promise.all(chats.map((c) => toDTO(c)));
+  const dtos = await Promise.all(chats.map((c) => toChatDTO(c)));
   return toSorted(dtos); 
 };
-//add broadcastings late and mutations if needed
-const addChat = withDTO(_add, toDTO);  
-const deleteChat = withDTO(_del, toDTO);
-const markAsRead = withDTO(_mark, toDTO);
+const addChat = withChatDTO(
+  _add, 
+  (chat: ChatDTO) => socketService.broadcastChat("chat:new", chat));  
+const deleteChat = withChatDTO(_del);
+const markAsRead = withChatDTO(
+  _mark, 
+  (chat: ChatDTO) => socketService.broadcastChat("chat:updated", chat)
+);
 const toSorted = (chats: ChatDTO[]) => {
   return chats.sort((a, b) => {
     const aTime = a.lastMessage?.createdAt?.getTime() ?? 0;
@@ -96,5 +87,5 @@ export default {
   findOneUserChat,
   markAsRead,
   getChats,
-  toDTO
+  toChatDTO
 };
