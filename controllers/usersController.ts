@@ -13,7 +13,7 @@ const updateProfile = async (
     const id = getCurrentUserId(request);
     const payload = updateUserSchema.parse({ ...request.body, id });
     const updatedUser = await userService.updateUser(payload);
-    response.json(updatedUser as UserDTO);
+    response.json(updatedUser);
   } catch (e: unknown) {
     next(e);
   }
