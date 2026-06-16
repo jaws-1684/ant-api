@@ -57,7 +57,7 @@ const updateGroup = async (
   try {
     const userId = getCurrentUserId(request);
     const update = updateGroupSchema.parse({ ...request?.body, id: request.params?.id });
-    const group = await groupService.updateGroup(userId, update);
+    const group = await groupService.updateGroup({ admin: userId, update });
     response.send(group);
   } catch (e) {
     next(e);
