@@ -1,4 +1,3 @@
-
 import userService from "./userService.ts";
 import {
   ForbiddenError,
@@ -11,6 +10,8 @@ import type {
   UserDocument,
 } from "../types.ts";
 import { authorizedUser, hashPassword, matchPassword, decodeRefreshToken } from "../utils/auth.ts";
+import { withUserDTO } from "../utils/dto.ts";
+
 const createAccessToken = async (refreshToken: string): Promise<string> => {
   const decoded = decodeRefreshToken(refreshToken);
   const user = await userService.findById(decoded.userId);
@@ -38,7 +39,7 @@ const loginUser = async (loginUser: LoginPayload): Promise<UserDocument> => {
   }
   return authorizedUser({ id: user.id, password });
 };
-const updateCredentials = async (
+const _updateCredentials = async (
   updateUserCredentials: UpdateCredentialsPayload,
 ): Promise<UserDocument | null> => {
   const { id, email, password, newPassword } = updateUserCredentials;
@@ -50,6 +51,7 @@ const updateCredentials = async (
 
   return user.save();
 };
+const updateCredentials = withUserDTO(_updateCredentials);
 const deleteProfile = async (
   deleteUser: Pick<UpdateCredentialsPayload, "id" | "password">,
 ): Promise<void> => {
