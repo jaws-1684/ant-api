@@ -1,7 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { NotAcceptedError } from "../utils/errors.ts";
 import { userSerializer } from "../utils/serializers.ts";
-import type { UserDocument } from "../types.ts";
 
 export const userSchema = new Schema({
   username: { type: String, required: true, unique: true },
@@ -28,7 +27,7 @@ userSchema.pre("save", function () {
 
 userSchema.set("toJSON", {
   transform: (_document, returnedObject) =>
-    userSerializer(returnedObject as UserDocument),
+    userSerializer(returnedObject),
 });
 
 const User = mongoose.model("User", userSchema);
