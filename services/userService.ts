@@ -7,6 +7,7 @@ import type {
   GithubProfile,
 } from "../types.ts";
 import { hashPassword } from "../utils/auth.ts";
+import { withUserDTO } from "../utils/dto.ts";
 
 const addUser = async (
   newUser: NewUser,
@@ -22,7 +23,7 @@ const addUser = async (
   }).save();
   return user;
 };
-const updateUser = async (
+const _update = async (
   updateUser: UpdateUser,
 ): Promise<UserDocument | null> => {
   const { id, image, username } = updateUser;
@@ -30,10 +31,9 @@ const updateUser = async (
 
   if (image !== undefined) user.image = image;
   if (username !== undefined) user.username = username;
-
   return user.save();
 };
-
+const updateUser = withUserDTO(_update);
 const findByEmail = async (email: string): Promise<UserDocument | null> => {
   return User.findOne({ email: email });
 };
@@ -98,5 +98,5 @@ export default {
   insertUsers,
   addFromGoogleProfile,
   addFromGithubProfile,
-  searchUsers
+  searchUsers,
 };
