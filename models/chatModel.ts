@@ -2,9 +2,11 @@ import mongoose, { Schema } from "mongoose";
 import type { ChatDocument } from "../types.ts";
 import { chatSerializer } from "../utils/serializers.ts";
 
+
 export const chatSchema = new Schema({
   participants: [{ type: Schema.Types.ObjectId, ref: "User" }],
   deletedFor: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  notifications: [{ type: Schema.Types.ObjectId, ref: "Notification"}],
   lastReadAt: {
     type: Map,
     of: Date,
@@ -18,11 +20,11 @@ export const chatSchema = new Schema({
   isGroup: { type: Boolean, default: false },
   admin: { type: String },
   closed: { type: Boolean, default: false },
+  lastMessage: { type: Schema.Types.ObjectId, ref: "Message", default: null }
 });
-
 chatSchema.set("toJSON", {
-  transform: (_document, returnedObject) =>
-    chatSerializer(returnedObject as ChatDocument),
+  transform: (_doc, returnedObject) =>
+    chatSerializer(returnedObject),
 });
 
 const Chat = mongoose.model<ChatDocument>("Chat", chatSchema);
