@@ -14,7 +14,6 @@ import type {
   updateGroupSchema,
 } from "./utils/schemas.ts";
 import type { Infer } from "./utils/w.ts";
-
 import type { Request } from "express";
 
 interface WithId {
@@ -43,7 +42,7 @@ type ChatDTOTransform = {
   lastMessage?: MessageDTO | null | undefined,
   unread?: number
 };
-export type ChatDTO = Omit<ChatEntry, keyof ChatDTOTransform> & ChatDTOTransform & WithId;
+export type ChatDTO = Omit<ChatEntry, keyof ChatDTOTransform | "deletedFor"> & ChatDTOTransform & WithId;
 export type ReturnedChat = ChatEntry & WithMongoId;
 export type UserEntry = InferSchemaType<typeof mongoUserSchema>;
 export type UserDocument = HydratedDocument<UserEntry>;
@@ -100,25 +99,6 @@ export type DTOType =
   | ChatDTO
   | NotificationDTO
   | UserDTO;
-export type InferDTO<T extends DocumentType> = T extends MessageDocument 
-  ? MessageDTO
-  : T extends ChatDocument
-  ? ChatDTO
-  : T extends NotificationDocument
-  ? NotificationDTO
-  : T extends UserDocument
-  ? UserDTO
-  : never;
-export type InferDocument<T extends DocumentType> = T extends MessageDocument 
-  ? MessageDocument
-  : T extends ChatDocument
-  ? ChatDocument
-  : T extends NotificationDocument
-  ? NotificationDocument
-  : T extends UserDocument
-  ? UserDocument
-  : never;
-  
 export type ReturnedType =
   | ReturnedUser
   | ReturnedChat
