@@ -77,20 +77,20 @@ describe("Group service", () => {
 
   it("#updateGroup should allow admin to update group", async () => {
     const { group, admin } = await resolve(["group", "admin"]);
-    const updated = await groupService.updateGroup(admin.id, {
+    const updated = await groupService.updateGroup({ admin: admin.id, update: {
         id: group.id,
         name: "Updated Group" ,
-    });
+    }});
     expect(updated.name).toEqual("Updated Group");
   });
 
   it("#updateGroup should not allow non-admin to update group", async () => {
     const { group, member } = await resolve(["group", "member"]);
     await expect(
-      groupService.updateGroup(member.id, {
+      groupService.updateGroup({ admin: member.id, update: {
         id: group.id,
         name: "Hacked" ,
-      }),
+      }}),
     ).rejects.toThrow();
   });
 });
