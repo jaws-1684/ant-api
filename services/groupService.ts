@@ -1,7 +1,9 @@
 import Chat from "../models/chatModel.ts";
-import type { ChatDocument, ChatServiceParams, UpdateGroup } from "../types.ts";
+import type { ChatDocument, ChatServiceParams, UpdateGroup, ChatDTO } from "../types.ts";
+import { withChatDTO } from "../utils/dto.ts";
+import socketService from "./socketService.ts";
 
-const addGroup = async ({
+const _add = async ({
   participants,
   name,
   admin,
@@ -12,7 +14,7 @@ const addGroup = async ({
 }): Promise<ChatDocument> => {
   return new Chat({ participants, name, admin, isGroup: true }).save();
 };
-const addToGroup = async ({ id, userId }: ChatServiceParams) => {
+const _join = async ({ id, userId }: ChatServiceParams) => {
   const group = await Chat.findOneAndUpdate(
     { _id: id, isGroup: true },
     { $push: { participants: userId } },
@@ -20,7 +22,14 @@ const addToGroup = async ({ id, userId }: ChatServiceParams) => {
   ).orFail();
   return group;
 };
-const deleteGroup = async ({ id, userId }: ChatServiceParams) => {
+const _update = async ({ admin, update }: { admin: string, update: UpdateGroup }): Promise<ChatDocument> => {
+  return Chat.findOneAndUpdate(
+    { _id: update.id, admin, isGroup: true },
+    { $set: update },
+    { returnDocument: "after" },
+  ).orFail();
+};
+const _delete = async ({ id, userId }: ChatServiceParams) => {
   return Chat.findOneAndUpdate({
     _id: id,
     admin: userId,
@@ -30,6 +39,16 @@ const deleteGroup = async ({ id, userId }: ChatServiceParams) => {
   { returnDocument: "after" }
 ).orFail();
 };
+const addGroup = withChatDTO(_add);
+const addToGroup = withChatDTO(_join);
+const updateGroup = withChatDTO(
+  _update, 
+  (chat: ChatDTO) => socketService.broadcastChat("chat:updated", chat)
+);
+const deleteGroup = withChatDTO(
+  _delete,
+  (chat: ChatDTO) => socketService.broadcastChat("chat:updated", chat)
+);
 const searchGroups = async (query: string) => {
   return Chat.find({
     isGroup: true,
@@ -37,13 +56,7 @@ const searchGroups = async (query: string) => {
     name: { $regex: query, $options: 'i' }
   }).select('name participants');
 };
-const updateGroup = async (admin: string, update: UpdateGroup): Promise<ChatDocument> => {
-  return Chat.findOneAndUpdate(
-    { _id: update.id, admin, isGroup: true },
-    { $set: update },
-    { returnDocument: "after" },
-  ).orFail();
-};
+
 export default { 
   searchGroups,
   addGroup,
