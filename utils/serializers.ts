@@ -1,43 +1,36 @@
 import type {
-  DTOType,
-  InferDocument,
   ReturnedChat,
   ReturnedMessage,
   ReturnedNotification,
   ReturnedUser,
   ReturnedType,
-  DocumentType,
-  InferDTO,
-  InferReturnType
 } from "../types.ts";
-
-const pick = <T extends ReturnedType, Out extends InferReturnType<T>, K extends keyof Out>(
+const pick = <T extends ReturnedType, K extends keyof T>(
   obj: T,
   keys: K[],
-) => {
+): Pick<T, K> => {
   return Object.fromEntries(
     Object.entries(obj).filter(([key]) => keys.includes(key as K)),
-  ) as { [P in keyof Out]: Out[P] };
+  ) as Pick<T, K>;
 };
-const omit = <T extends ReturnedType, Out extends InferReturnType<T>, K extends keyof Out>(
-  obj: Out,
+const omit = <T extends ReturnedType, K extends keyof T>(
+  obj: T,
   keys: K[],
-) => {
+): Omit<T, K> => {
   return Object.fromEntries(
     Object.entries(obj).filter(([key]) => !keys.includes(key as K)),
-  ) as { [P in keyof Out]: Out[P] };
+  ) as Omit<T, K>;
 };
-
-const serializer = <T extends ReturnedType, Out extends InferReturnType<T>>(selector?: (obj: Out) => Out) => {
-  return (obj: Out) => {
+const serializer = <T extends ReturnedType, S = Omit<T, '_id' | '__v'>>(selector?: (obj: T) => S) => {
+  return (obj: T): S & { id: string } => {
     const omitted = omit(obj, ["_id", "__v"]);
     const returned = selector 
-      ? selector(omitted)
+      ? selector(omitted as T)
       : obj;
     return {
       ...returned,
       id: obj._id.toString()
-    };
+    } as S & { id: string };
   };
 };
 export const userSerializer = serializer((returnedUser: ReturnedUser) => {
@@ -46,9 +39,9 @@ export const userSerializer = serializer((returnedUser: ReturnedUser) => {
     "username",
     "image",
     "chats",
-  ]);
+  ] as const);
 });
-export const chatSerializer = serializer((returnedChat: ReturnedChat) => returnedChat);
+export const chatSerializer = serializer((returnedChat: ReturnedChat) => omit(returnedChat, ["deletedFor"]));
 export const notificationSerializer = serializer((returnedNotification: ReturnedNotification) => returnedNotification);
 export const messageSerializer = serializer((returnedMessage: ReturnedMessage) => {
    const replaceDeleted = (message: ReturnedMessage) => {
@@ -59,14 +52,3 @@ export const messageSerializer = serializer((returnedMessage: ReturnedMessage) =
   };
   return replaceDeleted(returnedMessage);
 });
-export const withDTO = <Doc extends DocumentType, Params, DTO extends DTOType>(
-  getDocument: (obj: Params) => Promise<Doc>,
-  toDTO: (doc: InferDocument<Doc>) => Promise<DTO>,
-  broadcast?: (dto: InferDTO<Doc>) => Promise<void>) => {
-  return async (obj: Params) => {
-    const document = await getDocument(obj) as InferDocument<Doc>;
-    const dto = await toDTO(document) as InferDTO<Doc>;
-    if (broadcast !== undefined) await broadcast(dto);
-    return dto;
-  };
-};
