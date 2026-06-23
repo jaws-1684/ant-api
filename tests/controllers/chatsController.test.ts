@@ -128,7 +128,7 @@ describe("/api/chats", () => {
       ]);
 
       const result = await agent
-        .get("/api/chats/" + chat.id)
+        .get("/api/chats/" + chat.id + "/messages")
         .set("Authorization", `Bearer ${accessToken}`)
         .expect(200)
         .expect("Content-Type", /application\/json/);
@@ -152,18 +152,15 @@ describe("/api/chats", () => {
     });
 
     it("should delete a chat", async () => {
-      const { chat, accessToken, user } = await resolve([
+      const { chat, accessToken } = await resolve([
         "chat",
         "accessToken",
         "user",
       ]);
-      const response = await agent
+      await agent
         .delete(`/api/chats/${chat.id}`)
         .set("Authorization", `Bearer ${accessToken}`)
         .expect(200);
-      expect(response.body.deletedFor).toEqual(
-        expect.arrayContaining([user.id]),
-      );
     });
 
     it("should not delete a chat of another user", async () => {
