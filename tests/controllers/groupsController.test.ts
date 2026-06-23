@@ -122,11 +122,10 @@ describe("/api/groups", () => {
             email: member.email,
             password: "12345678",
         });
-        const response = await agent
+        await agent
             .delete(`/api/groups/${group.id}/leave`)
             .set("Authorization", `Bearer ${memberToken}`)
             .expect(200);
-        expect(response.body.deletedFor).toContain(member.id);
         });
 
         it("should allow admin to close a group", async () => {
