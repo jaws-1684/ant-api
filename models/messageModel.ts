@@ -31,12 +31,7 @@ messageSchema.set("toJSON", {
   transform: (_document, returnedObject) =>
     messageSerializer(returnedObject),
 });
-messageSchema.post("save", async function () {
-  await Chat.findOneAndUpdate(
-    { _id: this.chatId, participants: this.userId },
-    { lastMessage: this._id },
-  );
-});
+
 const Message = mongoose.model<MessageDocument>("Message", messageSchema);
 
 export default Message;
