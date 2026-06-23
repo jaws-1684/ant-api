@@ -5,7 +5,7 @@ import { stringSchema } from "../utils/schemas.ts";
 
 const searchUsers = async (request: Request, response: Response, next: NextFunction) => {
   try {
-    const query = stringSchema.parse(request?.query);
+    const query = stringSchema.parse(request?.query.query);
     const users = await userService.searchUsers(query);
     response.send(users);
   } catch (e) {
@@ -15,7 +15,7 @@ const searchUsers = async (request: Request, response: Response, next: NextFunct
 
 const searchGroups = async (request: Request, response: Response, next: NextFunction) => {
   try {
-    const query = stringSchema.parse(request?.query);
+    const query = stringSchema.parse(request?.query.query);
     const groups = await groupService.searchGroups(query);
     response.send(groups);
   } catch (e) {
