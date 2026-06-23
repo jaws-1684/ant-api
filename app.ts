@@ -14,6 +14,8 @@ import searchRouter from "./routes/searchRouter.ts";
 import groupRouter from "./routes/groupRouter.ts";
 import config from "./utils/config.ts";
 import redis from "./utils/redis.ts";
+import { apiReference } from "@scalar/express-api-reference";
+import swaggerSpec from "./swagger.config.ts";
 
 const app = express();
 
@@ -29,6 +31,14 @@ app.use(cookieParser());
 // app.use(express.static('dist'));
 app.use(express.json());
 app.use(middleware.requestLogger);
+app.get("/openapi.json", (_req, res) => res.json(swaggerSpec));
+ 
+app.use(
+  "/docs",
+  apiReference({
+    spec: { url: "/openapi.json" },
+  })
+);
 
 app.use("/api/auth", authRouter);
 app.use(middleware.authMiddleware);
