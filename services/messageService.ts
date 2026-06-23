@@ -1,4 +1,4 @@
-import type { NewMessage, MessageDTO, UpdateMessage, MessageDocument, ReturnedMessage } from "../types.ts";
+import type { NewMessage, MessageDTO, UpdateMessage, MessageDocument } from "../types.ts";
 import Message from "../models/messageModel.ts";
 import Notification from "../models/notificationModel.ts";
 import Chat from "../models/chatModel.ts";
@@ -22,16 +22,20 @@ const OFFSET = 0;
 const PAGE = null;
 
 const _add = async (newMessage: NewMessage): Promise<MessageDocument> => {
-   await Chat.findOne({
+  const chat = await Chat.findOne({
     _id: newMessage.chatId,
     participants: newMessage.userId,
   }).orFail();
   const message = await new Message(newMessage).save();
-  await Notification.findOneAndUpdate(
+  const notification = await Notification.findOneAndUpdate(
       { chatId: newMessage.chatId, userId: newMessage.userId },
       { "$inc": { newMessages: 1 } },
-      { upsert: true },
+      { upsert: true, returnDocument: "after" },
     );
+  await Chat.updateOne(
+  { _id: chat._id },
+  { $addToSet: { notifications: notification._id }, lastMessage: message }
+);
   return message;
 };
 const _update = async (
