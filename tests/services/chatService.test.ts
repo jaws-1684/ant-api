@@ -115,7 +115,7 @@ describe("Chat service", () => {
     it("should return all the chats for the other user", async () => {
       const { user, chatList } = await resolve(["user", "chatList"]);
       const { id, participants } = chatList[0];
-      const friendId = participants[0].id;
+      const friendId = participants.find(p => p.id !== user.id)?.id!;
       await chatService.deleteChat({
         id,
         userId: user.id,
@@ -150,7 +150,6 @@ describe("Chat service", () => {
         expect(unreadChat).toHaveProperty("notifications");
         
         const notifications = unreadChat?.notifications;
-
         const unread = notifications?.find(n => n.userId !== user.id);
         expect(unread?.newMessages).toEqual(2);
       });
