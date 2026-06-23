@@ -36,12 +36,10 @@ export const updateMessageSchema = w.union([
   messageSchema.pick(["userId", "content"]),
   idSchema,
 ]);
-export const loginSchema = w
-  .union([
+export const loginSchema = 
     userSchema.pick(["username", "email", "password"]).partial({
       password: false,
-    }),
-  ])
+    })
   .refine(
     (obj) => Boolean(obj.email) || Boolean(obj.username),
     "Email or username expected",
