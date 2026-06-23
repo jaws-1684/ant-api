@@ -16,8 +16,8 @@ const _add = async ({
 };
 const _join = async ({ id, userId }: ChatServiceParams) => {
   const group = await Chat.findOneAndUpdate(
-    { _id: id, isGroup: true },
-    { $push: { participants: userId } },
+    { _id: id, isGroup: true, closed: false },
+    { $addToSet: { participants: userId } },
     { returnDocument: "after" }
   ).orFail();
   return group;
