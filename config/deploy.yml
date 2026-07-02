@@ -16,10 +16,6 @@ registry:
   - KAMAL_REGISTRY_PASSWORD
 
 env:
-  clear: 
-    - CLIENT_URL
-    - PORT
-    - BASE_URL
   secret:
     - MONGODB_URI
     - JWT_SECRET
@@ -32,18 +28,19 @@ env:
     - CLOUDINARY_SECRET
     - CLOUDINARY_CLOUD_NAME
     - REDIS_URL
+    - CLIENT_URL
+    - PORT
+    - BASE_URL
    
 
 accessories:
   redis:
     image: redis:latest
     host: 62.171.183.69
-    roles:
-      - web
-      - job
-    cmd: "redis-server"
-    volumes:
-      - /var/lib/redis:/data
+    port: 6379
+    directories:
+      - data:/var/lib/redis/data
+      
 
 proxy:
   ssl: true
