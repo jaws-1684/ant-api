@@ -1,0 +1,62 @@
+<% require "dotenv"; Dotenv.load(".env") %>
+# config/deploy.yml
+service: ant-api
+
+image: danscorpan/ant-api
+
+servers:
+  web:
+    hosts:
+      - 62.171.183.69 
+
+registry:
+  username: 
+  - KAMAL_USERNAME
+  password:
+  - KAMAL_REGISTRY_PASSWORD
+
+env:
+  clear: 
+    - CLIENT_URL
+    - PORT
+    - BASE_URL
+  secret:
+    - MONGODB_URI
+    - JWT_SECRET
+    - JWT_REFRESH_SECRET
+    - GOOGLE_CLIENT_ID
+    - GOOGLE_CLIENT_SECRET
+    - GITHUB_CLIENT_ID
+    - GITHUB_CLIENT_SECRET
+    - CLOUDINARY_API_KEY
+    - CLOUDINARY_SECRET
+    - CLOUDINARY_CLOUD_NAME
+    - REDIS_URL
+   
+
+accessories:
+  redis:
+    image: redis:latest
+    host: 62.171.183.69
+    roles:
+      - web
+      - job
+    cmd: "redis-server"
+    volumes:
+      - /var/lib/redis:/data
+
+proxy:
+  ssl: true
+  host: ant-api.jawsprojects.net
+  app_port: 3000
+
+builder:
+  arch: amd64
+  args:
+    RAILS_ENV: production
+  secrets:
+    - KAMAL_USERNAME
+    - KAMAL_REGISTRY_PASSWORD
+ssh:
+  user: jaws
+
